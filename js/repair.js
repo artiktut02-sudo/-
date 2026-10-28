@@ -18,8 +18,7 @@ function bindDragDrop(trayEl, dropEl, onDrop) {
     const partId = e.dataTransfer.getData("text/plain");
     if (partId) onDrop(partId);
   });
-
-  // Для тача
+  // Тач
   trayEl.querySelectorAll(".part-chip").forEach(chip => {
     let ghost = null;
     chip.addEventListener("touchstart", e => {
@@ -47,7 +46,7 @@ function bindDragDrop(trayEl, dropEl, onDrop) {
 function startSolderGame(zoneEl, progressEl, bonusEl, onFinish) {
   const state = RepairUI.solder; state.active = false; state.progress = 0; state.bonus = 0;
   progressEl.style.width = "0%"; bonusEl.textContent = "0";
-  const maxBonus = 30 + (G.upgrades.solderBonus || 0); // Бонус от апгрейда
+  const maxBonus = 30 + (G.upgrades.solderBonus || 0);
 
   const tick = () => {
     if (!state.active) return;
@@ -67,39 +66,44 @@ function startSolderGame(zoneEl, progressEl, bonusEl, onFinish) {
 }
 function resetSolderUI(progressEl, bonusEl) { progressEl.style.width = "0%"; bonusEl.textContent = "0"; }
 
-// ✅ ИСПРАВЛЕННАЯ МЕХАНИКА РАЗБОРКИ (Кнопки теперь кликаются)
+// МЕХАНИКА С ПОДСКАЗКАМИ
 function renderDeviceMechanics(r) {
   const partsLayer = document.getElementById("device-parts-layer");
+  const tutorial = document.getElementById("tutorial-hint");
   partsLayer.innerHTML = ""; 
+  tutorial.classList.add("hidden");
 
   const batteryFault = r.faults.find(f => f.id === "battery");
-  if (!batteryFault) return;
+  if (!batteryFault) return; // Если батарея не сломана, крышку не трогаем
 
-  // Если крышка не снята
   if (!r.backCoverRemoved) {
-    partsLayer.innerHTML = `<div class="interactive-btn" onclick="window.toggleCover(true)"><span>🔩 Снять крышку</span></div>`;
+    tutorial.classList.remove("hidden");
+    tutorial.textContent = "👆 Нажми на телефон, чтобы снять крышку";
+    partsLayer.innerHTML = `<div class="interactive-cover" onclick="window.toggleCover(true)"><span>🔩 Снять крышку</span></div>`;
     return;
   }
 
-  // Если снята, но батарея внутри
   if (!r.batteryRemoved) {
-    partsLayer.innerHTML = `<div class="interactive-battery" onclick="window.removeBattery()"><span style="color:#ff6b6b; font-weight:900;">🔋 Извлечь</span></div>`;
+    tutorial.classList.remove("hidden");
+    tutorial.textContent = "👆 Нажми на батарею, чтобы извлечь её";
+    partsLayer.innerHTML = `<div class="interactive-battery" onclick="window.removeBattery()"><span>🔋 Извлечь</span></div>`;
     return;
   }
 
-  // Если батарея извлечена, но не поставлена новая
   if (!batteryFault.done) {
-    partsLayer.innerHTML = `<div style="position:absolute; top:140px; left:30px; width:120px; height:80px; border:2px dashed #555; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">Сюда батарею</div>`;
+    tutorial.classList.remove("hidden");
+    tutorial.textContent = "👇 Перетащи новую батарею из инвентаря на телефон";
+    partsLayer.innerHTML = `<div style="position:absolute; top:140px; left:30px; width:120px; height:80px; border:2px dashed #555; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px; background:rgba(0,0,0,0.5);">Сюда батарею</div>`;
     return;
   }
 
-  // Если батарея поставлена, но крышка не закрыта
   if (batteryFault.done && !r.backCoverClosed) {
-    partsLayer.innerHTML = `<div class="interactive-btn" onclick="window.toggleCover(false)"><span>✅ Закрыть крышку</span></div>`;
+    tutorial.classList.remove("hidden");
+    tutorial.textContent = "👆 Нажми, чтобы закрыть крышку";
+    partsLayer.innerHTML = `<div class="interactive-cover" onclick="window.toggleCover(false)"><span>✅ Закрыть крышку</span></div>`;
   }
 }
 
-// Вызовы из HTML
 window.toggleCover = function(isRemoving) {
   if (!G.activeRepair) return;
   if (isRemoving) G.activeRepair.backCoverRemoved = true;

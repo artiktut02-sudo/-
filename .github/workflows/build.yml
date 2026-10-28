@@ -2,8 +2,8 @@ name: Build APK
 
 on:
   push:
-    branches: [ main ] # или master, если у тебя главная ветка называется master
-  workflow_dispatch: # позволяет запускать сборку вручную кнопкой
+    branches: [ main ] # Если у тебя ветка master, поменяй на master
+  workflow_dispatch: # Позволяет запускать сборку вручную
 
 jobs:
   build:
@@ -16,16 +16,19 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 22 # Capacitor 7 требует свежий Node
+        node-version: 22
 
     - name: Setup Java JDK 21
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '21' # Capacitor 7 требует JDK 21
+        java-version: '21'
 
+    # ИСПРАВЛЕННЫЙ ШАГ: используем v4 и явно просим platform-tools
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      uses: android-actions/setup-android@v4
+      with:
+        packages: platform-tools
 
     - name: Install dependencies
       run: npm install

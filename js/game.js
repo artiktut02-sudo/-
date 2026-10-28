@@ -16,6 +16,10 @@ const els = {
 let activeDetailLotId = null;
 let currentMarketFilter = "all";
 let currentPartsFilter = "phone";
+let marketSearchText = "";
+let partsSearchText = "";
+let marketLimit = 20; // Сколько лотов показывать
+let partsLimit = 20;  // Сколько запчастей показывать
 
 function fmt(n) { return Math.round(n).toLocaleString("ru-RU"); }
 function updateMoneyUI() { Object.values(els.money).forEach(el => { if (el) el.textContent = fmt(G.money); }); }
@@ -65,6 +69,7 @@ function showScreen(id) {
 
 window.filterMarket = function(type) {
   currentMarketFilter = type;
+  marketLimit = 20;
   document.querySelectorAll("#screen-market .filter-btn").forEach(b => b.classList.remove("active"));
   if(type === 'all') document.getElementById("fm-btn-all")?.classList.add("active");
   if(type === 'phone') document.getElementById("fm-btn-phone")?.classList.add("active");
@@ -74,6 +79,7 @@ window.filterMarket = function(type) {
 
 window.filterParts = function(type) {
   currentPartsFilter = type;
+  partsLimit = 20;
   document.querySelectorAll("#screen-parts-market .filter-btn").forEach(b => b.classList.remove("active"));
   if(type === 'all') document.getElementById("f-btn-all")?.classList.add("active");
   if(type === 'phone') document.getElementById("f-btn-phone")?.classList.add("active");
@@ -81,12 +87,38 @@ window.filterParts = function(type) {
   renderPartsMarket();
 };
 
+window.searchMarket = function(text) {
+  marketSearchText = text;
+  marketLimit = 20;
+  renderMarket();
+};
+
+window.searchParts = function(text) {
+  partsSearchText = text;
+  partsLimit = 20;
+  renderPartsMarket();
+};
+
+window.loadMoreMarket = function() {
+  marketLimit += 20;
+  renderMarket();
+};
+
+window.loadMoreParts = function() {
+  partsLimit += 20;
+  renderPartsMarket();
+};
+
 function renderMarket() {
   let visibleLots = LOTS.filter(l => l.reqRep <= G.reputation);
+  
   if (currentMarketFilter !== "all") visibleLots = visibleLots.filter(l => DEVICES[l.device].type === currentMarketFilter);
-  visibleLots = visibleLots.slice(0, 20);
+  if (marketSearchText) visibleLots = visibleLots.filter(l => DEVICES[l.device].name.toLowerCase().includes(marketSearchText.toLowerCase()));
 
-  els.marketList.innerHTML = visibleLots.map(lot => {
+  const total = visibleLots.length;
+  const shown = visibleLots.slice(0, marketLimit);
+
+  els.marketList.innerHTML = shown.map(lot => {
     const dev = DEVICES[lot.device];
     const profit = lotProfit(lot);
     return `
@@ -99,7 +131,45 @@ function renderMarket() {
         </div>
         <div style="color: var(--muted); font-size: 24px;">›</div>
       </div>`;
-  }).join("") || `<div class="empty-state glass"><p>В этой категории пока нет лотов.</p></div>`;
+  }).join("") || `<div class="empty-state glass"><p>Ничего не найдено.</p></div>`;
+
+  const loadBtn = document.getElementById("load-more-market");
+  if (loadBtn) {
+    loadBtn.style.display = shown.length < total ? "block" : "none";
+    loadBtn.textContent = `Показать ещё (${total - shown.length})`;
+  }
+}
+
+function renderPartsMarket() {
+  let visibleParts = Object.keys(PARTS);
+  
+  if (currentPartsFilter !== "all") visibleParts = visibleParts.filter(id => PARTS[id].type === currentPartsFilter);
+  if (partsSearchText) visibleParts = visibleParts.filter(id => PARTS[id].name.toLowerCase().includes(partsSearchText.toLowerCase()));
+
+  const total = visibleParts.length;
+  const shown = visibleParts.slice(0, partsLimit);
+
+  els.partsMarketList.innerHTML = shown.map(id => {
+    const p = PARTS[id];
+    const price = partPriceWithDiscount(id, G.reputation);
+    const count = G.ownedParts[id] || 0;
+    return `
+      <div class="lot-card">
+        <div class="lot-icon">${p.svg}</div>
+        <div class="lot-info">
+          <div class="lot-name">${p.name}</div>
+          <div class="lot-price">${fmt(price)} ₽</div>
+          <div class="lot-faults">В инвентаре: ${count} шт.</div>
+        </div>
+        <button class="btn-primary" onclick="buyPart('${id}', ${price})">Купить</button>
+      </div>`;
+  }).join("") || `<div class="empty-state glass"><p>Ничего не найдено.</p></div>`;
+
+  const loadBtn = document.getElementById("load-more-parts");
+  if (loadBtn) {
+    loadBtn.style.display = shown.length < total ? "block" : "none";
+    loadBtn.textContent = `Показать ещё (${total - shown.length})`;
+  }
 }
 
 window.openDeviceDetail = function(lotId) {
@@ -138,27 +208,6 @@ function buyLot(lotId, withDiscount) {
   });
   saveGame(G); updateMoneyUI(); updateInventoryUI();
   alert("📦 Устройство куплено!");
-}
-
-function renderPartsMarket() {
-  let visibleParts = Object.keys(PARTS);
-  if (currentPartsFilter !== "all") visibleParts = visibleParts.filter(id => PARTS[id].type === currentPartsFilter);
-
-  els.partsMarketList.innerHTML = visibleParts.map(id => {
-    const p = PARTS[id];
-    const price = partPriceWithDiscount(id, G.reputation);
-    const count = G.ownedParts[id] || 0;
-    return `
-      <div class="lot-card">
-        <div class="lot-icon">${p.svg}</div>
-        <div class="lot-info">
-          <div class="lot-name">${p.name}</div>
-          <div class="lot-price">${fmt(price)} ₽</div>
-          <div class="lot-faults">В инвентаре: ${count} шт.</div>
-        </div>
-        <button class="btn-primary" onclick="buyPart('${id}', ${price})">Купить</button>
-      </div>`;
-  }).join("");
 }
 
 window.buyPart = function(partId, price) {
@@ -216,7 +265,6 @@ function renderWorkshop() {
   const svgDefs = document.querySelector("#device-svg defs");
   
   if (dev.type === "pc") {
-    // Для ПК рисуем другой корпус
     svgScreen.setAttribute("x", "20"); svgScreen.setAttribute("y", "40"); svgScreen.setAttribute("width", "160"); svgScreen.setAttribute("height", "120");
     document.querySelector("#device-svg rect[stroke='#444']").setAttribute("height", "260");
     if (svgDefs) {

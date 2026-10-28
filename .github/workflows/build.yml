@@ -1,4 +1,4 @@
-name: Build Release APK
+name: Build Signed Release APK
 
 on:
   push:
@@ -45,16 +45,24 @@ jobs:
     - name: Sync web assets
       run: npx cap sync
 
-    # --- СБОРКА RELEASE БЕЗ ПОДПИСИ ---
-    - name: Build Release APK
+    # --- ГЕНЕРИРУЕМ КЛЮЧ И ПОДПИСЫВАЕМ ---
+    - name: Generate Keystore
+      run: |
+        cd android/app
+        keytool -genkeypair -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass password123 -keypass password123 -dname "CN=MyApp, OU=MyUnit, O=MyOrg, L=MyCity, S=MyState, C=US"
+
+    - name: Build Signed Release APK
       run: |
         cd android
         chmod +x gradlew
-        # Собираем релиз, но без подписи (для установки вручную)
-        ./gradlew assembleRelease -x lintVitalRelease
+        ./gradlew assembleRelease \
+          -Pandroid.injected.signing.store.file=$(pwd)/app/my-release-key.keystore \
+          -Pandroid.injected.signing.store.password=password123 \
+          -Pandroid.injecting.signing.key.alias=my-key-alias \
+          -Pandroid.injected.signing.key.password=password123
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: Tehnobaraholka-Release
-        path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+        name: Tehnobaraholka-Signed
+        path: android/app/build/outputs/apk/release/app-release.apk

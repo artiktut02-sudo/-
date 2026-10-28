@@ -3,9 +3,8 @@ const PARTS = {
   battery: { id: "battery", name: "Батарея", price: 600, emoji: "🔋" },
   cooler:  { id: "cooler",  name: "Кулер", price: 400, emoji: "🌀" },
   paste:   { id: "paste",   name: "Термопаста", price: 200, emoji: "🧴" },
-  power:   { id: "power",   name: "Контроллер питания", price: 800, emoji: "⚡" },
+  power:   { id: "power",   name: "Контроллер", price: 800, emoji: "⚡" },
 };
-
 const DEVICES = {
   nova_x1: { name: "Нова X1", emoji: "📱" }, nova_x3pro: { name: "Нова X3 Про", emoji: "📱" },
   nova_ultra: { name: "Нова Ультра", emoji: "📱" }, quant_s2: { name: "Квант S2", emoji: "📱" },
@@ -13,10 +12,9 @@ const DEVICES = {
   orion_neo: { name: "Орион Нео", emoji: "📱" }, lumen14: { name: "Люмен 14", emoji: "💻" },
   lumen16pro: { name: "Люмен 16 Про", emoji: "💻" }, vector15: { name: "Вектор Букс 15", emoji: "💻" },
   vector_ultra: { name: "Вектор Ультра", emoji: "💻" }, atlas_air: { name: "Атлас Эйр", emoji: "💻" },
-  atlas_game: { name: "Атлас Гейм", emoji: "💻" }, titan_base: { name: "Титан ПК Базовая", emoji: "🖥" },
-  titan_game: { name: "Титан ПК Гейм", emoji: "🖥" }
+  atlas_game: { name: "Атлас Гейм", emoji: "💻" }, titan_base: { name: "Титан ПК", emoji: "🖥" },
+  titan_game: { name: "Титан Гейм", emoji: "🖥" }
 };
-
 const LOTS = [
   { id: "l01", device: "orion_lite", buy: 800, sell: 1800, faults: ["battery"], reqRep: 0 },
   { id: "l02", device: "nova_x1", buy: 1200, sell: 2600, faults: ["screen"], reqRep: 0 },
@@ -33,14 +31,20 @@ const LOTS = [
   { id: "l13", device: "atlas_game", buy: 8500, sell: 17000, faults: ["cooler", "power", "paste"], reqRep: 3 },
   { id: "l14", device: "titan_base", buy: 9000, sell: 18000, faults: ["power"], reqRep: 4 },
   { id: "l15", device: "titan_game", buy: 12000, sell: 24000, faults: ["power", "cooler"], reqRep: 4 },
-  { id: "l16", device: "nova_x1", buy: 1500, sell: 2100, faults: ["screen", "battery"], reqRep: 0 },
+  // Специальные лоты для имбы
+  { id: "l16", device: "nova_x1", buy: 1500, sell: 2100, faults: ["screen", "battery"], reqRep: 0 }, // Убыточный
   { id: "l17", device: "quant_s2", buy: 1100, sell: 2200, faults: ["power"], reqRep: 1 },
   { id: "l18", device: "atlas_air", buy: 3800, sell: 9800, faults: ["paste"], reqRep: 2 }
 ];
-
 function partsCost(faults) { return faults.reduce((sum, id) => sum + (PARTS[id]?.price || 0), 0); }
 function lotProfit(lot) { return lot.sell - lot.buy - partsCost(lot.faults); }
 function starsFromRep(rep) { return Math.min(5, Math.floor(rep / 2)); }
 function partsDiscount(rep) { return Math.min(0.25, rep * 0.03); }
 function partPriceWithDiscount(partId, rep) { return Math.round((PARTS[partId]?.price || 0) * (1 - partsDiscount(rep))); }
 function finalSellPrice(lot, bonusPercent) { return Math.round(lot.sell * (1 + (bonusPercent || 0) / 100)); }
+
+// НОВОЕ: Инфо об апгрейдах
+const UPGRADES = [
+  { id: "solderPro", name: "Имба-паяльник", desc: "Увеличивает макс. бонус пайки на +15%", basePrice: 5000, reqRep: 1 },
+  { id: "fastSale", name: "Свой человек на рынке", desc: "Продажа девайсов приносит на 20% больше", basePrice: 10000, reqRep: 2 }
+];

@@ -198,21 +198,21 @@ function renderWorkshop() {
 
   renderPartsTray(r.faults.filter(f => !f.done).map(f => f.id), els.partsTray);
 
-  const deviceSvg = document.getElementById("device-svg");
-  if (deviceSvg) {
-    bindDragDrop(els.partsTray, deviceSvg, partId => {
+  // ИЗМЕНЕНИЕ ЗДЕСЬ: dropEl теперь = весь блок с телефоном
+  const deviceDropZone = document.getElementById("device-wrapper-click");
+  if (deviceDropZone) {
+    bindDragDrop(els.partsTray, deviceDropZone, partId => {
       const fault = r.faults.find(f => f.id === partId && !f.done);
       if (!fault) return;
       if (partId === "battery" && !r.backCoverRemoved) return alert("Сначала снимите крышку!");
       if ((G.ownedParts[partId] || 0) <= 0) return alert("У тебя нет этой запчасти! Купи её в магазине запчастей.");
       
-      // ПРОВЕРКА: если ставим батарею, её надо ставить ТОЛЬКО после извлечения старой!
       if (partId === "battery" && !r.batteryRemoved) {
         return alert("Сначала вытащите старую батарею! Нажмите на неё.");
       }
 
       fault.done = true;
-      G.ownedParts[partId] -= 1; // Тратим запчасть
+      G.ownedParts[partId] -= 1; 
       if (partId === "battery") {
         r.backCoverClosed = false;
         r.batteryRemoved = true;

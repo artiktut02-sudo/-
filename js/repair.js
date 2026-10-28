@@ -68,27 +68,33 @@ function resetSolderUI(progressEl, bonusEl) { progressEl.style.width = "0%"; bon
 function renderDeviceMechanics(r) {
   const partsLayer = document.getElementById("device-parts-layer");
   const tutorial = document.getElementById("tutorial-hint");
-  partsLayer.innerHTML = ""; tutorial.classList.add("hidden");
-  const hasBatteryFault = r.faults.some(f => PARTS[f.id]?.name.includes("Батарея"));
-  if (!hasBatteryFault) return; 
-  const batteryFault = r.faults.find(f => PARTS[f.id]?.name.includes("Батарея"));
+  partsLayer.innerHTML = ""; 
+  tutorial.classList.add("hidden");
+
+  const batteryFault = r.faults.find(f => PARTS[f.id]?.key === "battery");
+  if (!batteryFault) return; 
+
   if (!r.backCoverRemoved) {
-    tutorial.classList.remove("hidden"); tutorial.textContent = "👆 Снять крышку";
+    tutorial.classList.remove("hidden");
+    tutorial.textContent = "👆 Нажми на телефон, чтобы снять крышку (нужно для батареи)";
     partsLayer.innerHTML = `<div class="interactive-cover" onclick="window.toggleCover(true)"><span>🔩 Снять крышку</span></div>`;
     return;
   }
   if (!r.batteryRemoved) {
-    tutorial.classList.remove("hidden"); tutorial.textContent = "👆 Извлечь батарею";
+    tutorial.classList.remove("hidden");
+    tutorial.textContent = "👆 Нажми на батарею, чтобы извлечь её";
     partsLayer.innerHTML = `<div class="interactive-battery" onclick="window.removeBattery()"><span>🔋 Извлечь</span></div>`;
     return;
   }
   if (!batteryFault.done) {
-    tutorial.classList.remove("hidden"); tutorial.textContent = "👇 Перетащи новую батарею";
+    tutorial.classList.remove("hidden");
+    tutorial.textContent = "👇 Перетащи новую батарею из инвентаря";
     partsLayer.innerHTML = `<div style="position:absolute; top:140px; left:30px; width:120px; height:80px; border:2px dashed #555; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px; background:rgba(0,0,0,0.5); pointer-events: auto;">Сюда батарею</div>`;
     return;
   }
   if (batteryFault.done && !r.backCoverClosed) {
-    tutorial.classList.remove("hidden"); tutorial.textContent = "👆 Закрыть крышку";
+    tutorial.classList.remove("hidden");
+    tutorial.textContent = "👆 Нажми, чтобы закрыть крышку";
     partsLayer.innerHTML = `<div class="interactive-cover" onclick="window.toggleCover(false)"><span>✅ Закрыть крышку</span></div>`;
   }
 }

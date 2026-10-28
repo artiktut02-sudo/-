@@ -8,12 +8,13 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+<div class="bg-glow"></div> <!-- Фоновое свечение -->
 
 <!-- ЭКРАН 1: РАБОЧИЙ СТОЛ -->
 <section id="screen-desktop" class="screen active">
   <header class="topbar glass">
     <div class="brand">🛠 ТехноБарахолка</div>
-    <div class="wallet">💰 <span id="money-desktop">2000</span> ₽</div>
+    <div class="wallet glass">💰 <span id="money-desktop">2000</span> ₽</div>
   </header>
   <div class="desktop-grid">
     <button class="app-icon glass" data-screen="market">
@@ -35,12 +36,12 @@
   </div>
 </section>
 
-<!-- ЭКРАН 2: БАРАХОЛКА -->
+<!-- ЭКРАН 2: БАРАХОЛКА (Маркетплейс) -->
 <section id="screen-market" class="screen">
   <header class="topbar glass">
     <button class="back-btn" data-back>←</button>
     <div class="title">🏪 Барахолка</div>
-    <div class="wallet">💰 <span id="money-market">2000</span> ₽</div>
+    <div class="wallet glass">💰 <span id="money-market">2000</span> ₽</div>
   </header>
   <div id="lot-of-day" class="lot-of-day hidden"></div>
   <div id="market-list" class="market-list"></div>
@@ -51,7 +52,7 @@
   <header class="topbar glass">
     <button class="back-btn" data-back>←</button>
     <div class="title">🔧 Мастерская</div>
-    <div class="wallet">💰 <span id="money-workshop">2000</span> ₽</div>
+    <div class="wallet glass">💰 <span id="money-workshop">2000</span> ₽</div>
   </header>
 
   <div id="workshop-empty" class="empty-state glass">
@@ -60,35 +61,31 @@
   </div>
 
   <div id="workshop-active" class="workshop hidden">
-    <!-- Зона ремонта -->
     <div class="repair-stage glass">
       <div class="device-wrapper">
-        <!-- Красивый SVG телефон -->
         <svg id="device-svg" viewBox="0 0 200 400" class="device-svg">
-          <!-- Корпус -->
+          <defs>
+            <linearGradient id="screenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#1a1d24"/>
+              <stop offset="100%" stop-color="#0f1115"/>
+            </linearGradient>
+          </defs>
           <rect x="10" y="10" width="180" height="380" rx="30" fill="#1a1d24" stroke="#333" stroke-width="4"/>
-          <!-- Экран -->
-          <rect x="20" y="40" width="160" height="320" rx="20" fill="#0f1115" id="svg-screen"/>
-          <!-- Кнопки -->
+          <rect x="20" y="40" width="160" height="320" rx="20" fill="url(#screenGrad)" id="svg-screen"/>
           <rect x="85" y="15" width="30" height="4" rx="2" fill="#444"/>
-          <rect x="80" y="365" width="40" height="4" rx="2" fill="#444"/>
         </svg>
-        <!-- Слой с болтами/крышкой -->
+        <!-- Слой для механик (крышка, батарея) -->
         <div id="device-parts-layer" class="device-parts-layer"></div>
       </div>
       <div id="faults-list" class="faults-list"></div>
     </div>
 
-    <!-- Инвентарь запчастей -->
     <div class="parts-title">Запчасти в мастерской:</div>
     <div id="parts-tray" class="parts-tray glass"></div>
 
-    <!-- Мини-игра "пайка" -->
     <div id="solder-panel" class="solder-panel glass hidden">
       <div class="solder-title">🔥 Пайка (удерживай палец в зоне)</div>
-      <div id="solder-zone" class="solder-zone">
-        <div id="solder-progress" class="solder-progress"></div>
-      </div>
+      <div id="solder-zone" class="solder-zone"><div id="solder-progress" class="solder-progress"></div></div>
       <div class="solder-hint">Бонус к цене: <span id="solder-bonus">0</span>%</div>
     </div>
 
@@ -103,7 +100,7 @@
   <header class="topbar glass">
     <button class="back-btn" data-back>←</button>
     <div class="title">👤 Профиль</div>
-    <div class="wallet">💰 <span id="money-profile">2000</span> ₽</div>
+    <div class="wallet glass">💰 <span id="money-profile">2000</span> ₽</div>
   </header>
   <div class="profile-card glass">
     <div class="avatar">🛠</div>
@@ -120,14 +117,14 @@
   <button id="btn-reset" class="btn-danger">Сбросить прогресс</button>
 </section>
 
-<!-- ЭКРАН 5: БИЗНЕС -->
+<!-- ЭКРАН 5: БИЗНЕС (Имба-апгрейды) -->
 <section id="screen-business" class="screen">
   <header class="topbar glass">
     <button class="back-btn" data-back>←</button>
     <div class="title">📈 Бизнес</div>
-    <div class="wallet">💰 <span id="money-business">2000</span> ₽</div>
+    <div class="wallet glass">💰 <span id="money-business">2000</span> ₽</div>
   </header>
-  <div class="empty-state glass"><p>Апгрейды появятся в v1.1:<br>скидки на запчасти, больше лотов,<br>быстрый ремонт.</p></div>
+  <div id="business-list" class="business-list"></div>
 </section>
 
 <script src="js/save.js"></script>

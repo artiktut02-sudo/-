@@ -1,12 +1,22 @@
 const RepairUI = { solder: { active: false, progress: 0, bonus: 0, raf: null } };
 
+// Показываем ВСЕ купленные запчасти
 function renderPartsTray(partIds, container) {
-  container.innerHTML = partIds.map(id => {
+  const allOwnedParts = Object.keys(G.ownedParts).filter(id => G.ownedParts[id] > 0);
+  
+  if (allOwnedParts.length === 0) {
+    container.innerHTML = `<div style="color:#888; padding:10px; font-size:13px;">Нет запчастей! Купи их в магазине (⚙️).</div>`;
+    return;
+  }
+
+  container.innerHTML = allOwnedParts.map(id => {
     const p = PARTS[id];
-    const count = G.ownedParts[id] || 0;
-    if (count <= 0) return "";
-    return `<div class="part-chip" draggable="true" data-part="${p.id}">${p.svg} ${p.name} (${count})</div>`;
-  }).join("") || `<div style="color:#888; padding:10px; font-size:13px;">Нет нужных запчастей!</div>`;
+    if (!p) return "";
+    const count = G.ownedParts[id];
+    return `<div class="part-chip" draggable="true" data-part="${p.id}" data-type="${p.type}">
+      ${p.svg} ${p.name} (${count})
+    </div>`;
+  }).join("");
 }
 
 function bindDragDrop(trayEl, dropEl, onDrop) {

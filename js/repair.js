@@ -9,6 +9,7 @@ function renderPartsTray(partIds, container) {
 }
 
 function bindDragDrop(trayEl, dropEl, onDrop) {
+  // Для компьютера (Drag & Drop)
   trayEl.querySelectorAll(".part-chip").forEach(chip => {
     chip.addEventListener("dragstart", e => {
       e.dataTransfer.setData("text/plain", chip.dataset.part);
@@ -24,6 +25,7 @@ function bindDragDrop(trayEl, dropEl, onDrop) {
     if (partId) onDrop(partId);
   });
 
+  // Для телефона (Touch)
   trayEl.querySelectorAll(".part-chip").forEach(chip => {
     let ghost = null;
     chip.addEventListener("touchstart", e => {
@@ -81,3 +83,57 @@ function resetSolderUI(progressEl, bonusEl) {
   if (state.raf) cancelAnimationFrame(state.raf);
   progressEl.style.width = "0%"; bonusEl.textContent = "0";
 }
+
+// 🔥 НОВАЯ МЕХАНИКА РАЗБОРКИ
+function renderDeviceMechanics(r, els) {
+  const partsLayer = document.getElementById("device-parts-layer");
+  partsLayer.innerHTML = ""; // Очищаем слой
+
+  // 1. Если батарея сломана, и мы ещё не сняли крышку
+  const batteryFault = r.faults.find(f => f.id === "battery");
+  if (batteryFault && !r.backCoverRemoved) {
+    partsLayer.innerHTML = `
+      <div class="interactive-part back-cover" style="position:absolute; inset:10px; background:rgba(30,34,42,0.9); border-radius:20px; border:2px solid #444; display:flex; align-items:center; justify-content:center; cursor:pointer; pointer-events:auto;" onclick="window.removeBackCover()">
+        <span style="color:#aaa; font-weight:bold;">🔩 Снять крышку</span>
+      </div>`;
+    return; // Ждём, пока снимут крышку
+  }
+
+  // 2. Если крышка снята, но батарея ещё внутри
+  if (batteryFault && r.backCoverRemoved && !r.batteryRemoved) {
+    partsLayer.innerHTML = `
+      <div class="interactive-part old-battery" style="position:absolute; top:150px; left:40px; width:120px; height:80px; background:#333; border:2px solid #555; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; pointer-events:auto;" onclick="window.removeOldBattery()">
+        <span style="color:#ff6b6b; font-weight:bold; font-size:12px;">🔋 Извлечь батарею</span>
+      </div>`;
+    return;
+  }
+
+  // 3. Если крышка снята, батарея извлечена, но новая ещё не вставлена (ждём Drag&Drop)
+  if (batteryFault && r.backCoverRemoved && r.batteryRemoved && !batteryFault.done) {
+    partsLayer.innerHTML = `
+      <div class="interactive-part empty-slot" style="position:absolute; top:150px; left:40px; width:120px; height:80px; border:2px dashed #555; border-radius:8px; display:flex; align-items:center; justify-content:center; pointer-events:none;">
+        <span style="color:#666; font-size:12px;">Место под батарею</span>
+      </div>`;
+    return; // Ждём, пока перетащат запчасть
+  }
+
+  // 4. Если батарея установлена, но крышка не закрыта
+  if (batteryFault && batteryFault.done && !r.backCoverClosed) {
+    partsLayer.innerHTML = `
+      <div class="interactive-part close-cover" style="position:absolute; inset:10px; background:rgba(34,197,94,0.1); border-radius:20px; border:2px dashed #22c55e; display:flex; align-items:center; justify-content:center; cursor:pointer; pointer-events:auto;" onclick="window.closeBackCover()">
+        <span style="color:#22c55e; font-weight:bold;">✅ Закрыть крышку</span>
+      </div>`;
+    return;
+  }
+}
+
+// Глобальные функции для кнопок-механик (вызываются из HTML)
+window.removeBackCover = function() {
+  if (G.activeRepair) { G.activeRepair.backCoverRemoved = true; renderWorkshop(); }
+};
+window.removeOldBattery = function() {
+  if (G.activeRepair) { G.activeRepair.batteryRemoved = true; renderWorkshop(); }
+};
+window.closeBackCover = function() {
+  if (G.activeRepair) { G.activeRepair.backCoverClosed = true; renderWorkshop(); }
+};

@@ -8,12 +8,23 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-<!-- Анимированный фон с частицами -->
 <div class="bg-layer">
   <div class="glow-orb orb-1"></div>
   <div class="glow-orb orb-2"></div>
   <div class="glow-orb orb-3"></div>
 </div>
+
+<!-- ЭКРАН 0: АВТОРИЗАЦИЯ АДМИНА -->
+<section id="screen-login" class="screen">
+  <div class="glass" style="padding: 32px; margin: auto; width: 90%; max-width: 400px; text-align: center;">
+    <h2>Авторизация</h2>
+    <p style="margin-bottom: 20px; font-size: 13px; color: var(--muted);">Вход для администратора</p>
+    <input type="text" id="admin-login" placeholder="Логин" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; outline:none;">
+    <input type="password" id="admin-password" placeholder="Пароль" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; outline:none;">
+    <button class="btn-primary" style="width: 100%;" onclick="window.tryLogin()">Войти</button>
+    <button class="btn-primary" style="width: 100%; margin-top: 10px; background: #444;" onclick="showScreen('desktop')">Отмена</button>
+  </div>
+</section>
 
 <!-- ЭКРАН 1: РАБОЧИЙ СТОЛ -->
 <section id="screen-desktop" class="screen active">
@@ -21,7 +32,7 @@
     <div class="brand">
       <span class="brand-icon">⚡</span> ТехноБарахолка <span class="pro-badge">PRO</span>
     </div>
-    <div class="wallet glass">💰 <span id="money-desktop">2000</span> ₽</div>
+    <div class="wallet glass">💰 <span id="money-desktop">10000</span> ₽</div>
   </header>
   
   <div class="desktop-hero">
@@ -72,6 +83,13 @@
         <span class="app-desc">Улучшения</span>
       </div>
     </button>
+    <button class="app-icon glass" data-screen="login">
+      <div class="icon-bg" style="background: linear-gradient(135deg, #333, #111);">👑</div>
+      <div class="icon-text">
+        <span class="app-name">Админка</span>
+        <span class="app-desc">Вход для админа</span>
+      </div>
+    </button>
   </div>
 </section>
 
@@ -83,12 +101,45 @@
       <p>Найди технику для ремонта</p>
     </div>
     <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-market">2000</span> ₽</div>
+      <div class="wallet glass">💰 <span id="money-market">10000</span> ₽</div>
       <button class="close-btn" data-back>✕</button>
     </div>
   </header>
   <div id="lot-of-day" class="lot-of-day hidden"></div>
   <div id="market-list" class="market-list"></div>
+</section>
+
+<!-- ЭКРАН ДЕТАЛЕЙ УСТРОЙСТВА (ОЗОН) -->
+<section id="screen-device-detail" class="screen">
+  <header class="topbar glass">
+    <button class="close-btn" data-back>✕</button>
+    <div class="title-wrap"><h2 id="detail-title">Устройство</h2><p>Описание и поломки</p></div>
+  </header>
+  
+  <div class="glass" style="padding: 20px; border-radius: 20px;">
+    <div style="text-align: center; margin-bottom: 20px; height: 120px;" id="detail-svg-container"></div>
+    
+    <h3 id="detail-name" style="margin: 0 0 10px 0; font-size: 22px;">Название</h3>
+    <p id="detail-desc" style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Описание устройства...</p>
+    
+    <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+      <div style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">НЕИСПРАВНОСТИ:</div>
+      <div id="detail-faults" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <div style="font-size: 12px; color: var(--muted);">Цена покупки:</div>
+        <div style="font-size: 24px; font-weight: 900; color: var(--gold);" id="detail-buy-price">0 ₽</div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 12px; color: var(--muted);">Прогноз прибыли:</div>
+        <div style="font-size: 24px; font-weight: 900; color: var(--accent);" id="detail-profit">0 ₽</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" style="width: 100%; padding: 16px; font-size: 16px;" id="btn-buy-device">Купить</button>
+  </div>
 </section>
 
 <!-- ЭКРАН 3: МАРКЕТПЛЕЙС ЗАПЧАСТЕЙ -->
@@ -99,7 +150,7 @@
       <p>Закупись перед ремонтом</p>
     </div>
     <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-parts">2000</span> ₽</div>
+      <div class="wallet glass">💰 <span id="money-parts">10000</span> ₽</div>
       <button class="close-btn" data-back>✕</button>
     </div>
   </header>
@@ -114,7 +165,7 @@
       <p>Починим всё!</p>
     </div>
     <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-workshop">2000</span> ₽</div>
+      <div class="wallet glass">💰 <span id="money-workshop">10000</span> ₽</div>
       <button class="close-btn" data-back>✕</button>
     </div>
   </header>
@@ -165,7 +216,7 @@
       <p>Твои устройства</p>
     </div>
     <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-inventory">2000</span> ₽</div>
+      <div class="wallet glass">💰 <span id="money-inventory">10000</span> ₽</div>
       <button class="close-btn" data-back>✕</button>
     </div>
   </header>
@@ -180,7 +231,7 @@
       <p>Статистика мастера</p>
     </div>
     <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-profile">2000</span> ₽</div>
+      <div class="wallet glass">💰 <span id="money-profile">10000</span> ₽</div>
       <button class="close-btn" data-back>✕</button>
     </div>
   </header>
@@ -207,7 +258,7 @@
       <p>Инвестируй в развитие</p>
     </div>
     <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-business">2000</span> ₽</div>
+      <div class="wallet glass">💰 <span id="money-business">10000</span> ₽</div>
       <button class="close-btn" data-back>✕</button>
     </div>
   </header>

@@ -8,13 +8,9 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-<div class="bg-layer">
-  <div class="glow-orb orb-1"></div>
-  <div class="glow-orb orb-2"></div>
-  <div class="glow-orb orb-3"></div>
-</div>
+<div class="bg-layer"><div class="glow-orb orb-1"></div><div class="glow-orb orb-2"></div><div class="glow-orb orb-3"></div></div>
 
-<!-- ЭКРАН 0: АВТОРИЗАЦИЯ АДМИНА -->
+<!-- ЭКРАН 0: АВТОРИЗАЦИЯ -->
 <section id="screen-login" class="screen">
   <div class="glass" style="padding: 32px; margin: auto; width: 90%; max-width: 400px; text-align: center;">
     <h2>Авторизация</h2>
@@ -29,66 +25,45 @@
 <!-- ЭКРАН 1: РАБОЧИЙ СТОЛ -->
 <section id="screen-desktop" class="screen active">
   <header class="topbar glass">
-    <div class="brand">
-      <span class="brand-icon">⚡</span> ТехноБарахолка <span class="pro-badge">PRO</span>
-    </div>
+    <div class="brand"><span class="brand-icon">⚡</span> ТехноБарахолка <span class="pro-badge">PRO</span></div>
     <div class="wallet glass">💰 <span id="money-desktop">10000</span> ₽</div>
   </header>
-  
   <div class="desktop-hero">
     <h1>Добро пожаловать, Мастер</h1>
     <p>Твой путь от новичка до владельца сети сервисов начинается здесь</p>
   </div>
-
   <div class="desktop-grid">
     <button class="app-icon glass" data-screen="market">
       <div class="icon-bg" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);">🏪</div>
-      <div class="icon-text">
-        <span class="app-name">Устройства</span>
-        <span class="app-desc">Купить на ремонт</span>
-      </div>
+      <div class="icon-text"><span class="app-name">Устройства</span><span class="app-desc">Купить на ремонт</span></div>
     </button>
     <button class="app-icon glass" data-screen="parts-market">
       <div class="icon-bg" style="background: linear-gradient(135deg, #f6d365, #fda085);">⚙️</div>
-      <div class="icon-text">
-        <span class="app-name">Запчасти</span>
-        <span class="app-desc">Закупка оптом</span>
-      </div>
+      <div class="icon-text"><span class="app-name">Запчасти</span><span class="app-desc">Закупка оптом</span></div>
     </button>
     <button class="app-icon glass" data-screen="inventory">
       <div class="icon-bg" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">📦</div>
-      <div class="icon-text">
-        <span class="app-name">Склад</span>
-        <span class="app-desc"><span id="inv-count">0/50</span> устройств</span>
-      </div>
+      <div class="icon-text"><span class="app-name">Склад</span><span class="app-desc"><span id="inv-count">0/50</span> устройств</span></div>
     </button>
     <button class="app-icon glass" data-screen="workshop">
       <div class="icon-bg" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">🔧</div>
-      <div class="icon-text">
-        <span class="app-name">Мастерская</span>
-        <span class="app-desc">Ремонт техники</span>
-      </div>
+      <div class="icon-text"><span class="app-name">Мастерская</span><span class="app-desc">Ремонт техники</span></div>
     </button>
     <button class="app-icon glass" data-screen="profile">
       <div class="icon-bg" style="background: linear-gradient(135deg, #84fab0, #8fd3f4);">👤</div>
-      <div class="icon-text">
-        <span class="app-name">Профиль</span>
-        <span class="app-desc">Статистика</span>
-      </div>
+      <div class="icon-text"><span class="app-name">Профиль</span><span class="app-desc">Статистика</span></div>
     </button>
     <button class="app-icon glass" data-screen="business">
       <div class="icon-bg" style="background: linear-gradient(135deg, #fccb90, #d57eeb);">📈</div>
-      <div class="icon-text">
-        <span class="app-name">Бизнес</span>
-        <span class="app-desc">Улучшения</span>
-      </div>
+      <div class="icon-text"><span class="app-name">Бизнес</span><span class="app-desc">Улучшения</span></div>
     </button>
     <button class="app-icon glass" data-screen="login">
       <div class="icon-bg" style="background: linear-gradient(135deg, #333, #111);">👑</div>
-      <div class="icon-text">
-        <span class="app-name">Админка</span>
-        <span class="app-desc">Вход для админа</span>
-      </div>
+      <div class="icon-text"><span class="app-name">Админка</span><span class="app-desc">Вход для админа</span></div>
+    </button>
+    <button class="app-icon glass" onclick="window.openAdminAddMenu()" style="border: 1px dashed #fbbf24;">
+      <div class="icon-bg" style="background: linear-gradient(135deg, #fbbf24, #d97706);">➕</div>
+      <div class="icon-text"><span class="app-name" style="color: #fbbf24;">Добавить</span><span class="app-desc">Админ-меню</span></div>
     </button>
   </div>
 </section>
@@ -96,63 +71,37 @@
 <!-- ЭКРАН 2: МАРКЕТПЛЕЙС УСТРОЙСТВ -->
 <section id="screen-market" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap">
-      <h2>🏪 Устройства</h2>
-      <p>Найди технику для ремонта</p>
-    </div>
-    <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-market">10000</span> ₽</div>
-      <button class="close-btn" data-back>✕</button>
-    </div>
+    <div class="title-wrap"><h2>🏪 Устройства</h2><p>Найди технику для ремонта</p></div>
+    <div class="top-actions"><div class="wallet glass">💰 <span id="money-market">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
   <div id="lot-of-day" class="lot-of-day hidden"></div>
   <div id="market-list" class="market-list"></div>
 </section>
 
-<!-- ЭКРАН ДЕТАЛЕЙ УСТРОЙСТВА (ОЗОН) -->
+<!-- ЭКРАН ДЕТАЛЕЙ (ОЗОН) -->
 <section id="screen-device-detail" class="screen">
-  <header class="topbar glass">
-    <button class="close-btn" data-back>✕</button>
-    <div class="title-wrap"><h2 id="detail-title">Устройство</h2><p>Описание и поломки</p></div>
-  </header>
-  
+  <header class="topbar glass"><button class="close-btn" data-back>✕</button><div class="title-wrap"><h2 id="detail-title">Устройство</h2><p>Описание и поломки</p></div></header>
   <div class="glass" style="padding: 20px; border-radius: 20px;">
     <div style="text-align: center; margin-bottom: 20px; height: 120px;" id="detail-svg-container"></div>
-    
     <h3 id="detail-name" style="margin: 0 0 10px 0; font-size: 22px;">Название</h3>
     <p id="detail-desc" style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Описание устройства...</p>
-    
     <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
       <div style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">НЕИСПРАВНОСТИ:</div>
       <div id="detail-faults" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
     </div>
-
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <div>
-        <div style="font-size: 12px; color: var(--muted);">Цена покупки:</div>
-        <div style="font-size: 24px; font-weight: 900; color: var(--gold);" id="detail-buy-price">0 ₽</div>
-      </div>
-      <div style="text-align: right;">
-        <div style="font-size: 12px; color: var(--muted);">Прогноз прибыли:</div>
-        <div style="font-size: 24px; font-weight: 900; color: var(--accent);" id="detail-profit">0 ₽</div>
-      </div>
+      <div><div style="font-size: 12px; color: var(--muted);">Цена покупки:</div><div style="font-size: 24px; font-weight: 900; color: var(--gold);" id="detail-buy-price">0 ₽</div></div>
+      <div style="text-align: right;"><div style="font-size: 12px; color: var(--muted);">Прогноз прибыли:</div><div style="font-size: 24px; font-weight: 900; color: var(--accent);" id="detail-profit">0 ₽</div></div>
     </div>
-
     <button class="btn-primary" style="width: 100%; padding: 16px; font-size: 16px;" id="btn-buy-device">Купить</button>
   </div>
 </section>
 
-<!-- ЭКРАН 3: МАРКЕТПЛЕЙС ЗАПЧАСТЕЙ -->
+<!-- ЭКРАН 3: ЗАПЧАСТИ -->
 <section id="screen-parts-market" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap">
-      <h2>⚙️ Запчасти</h2>
-      <p>Закупись перед ремонтом</p>
-    </div>
-    <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-parts">10000</span> ₽</div>
-      <button class="close-btn" data-back>✕</button>
-    </div>
+    <div class="title-wrap"><h2>⚙️ Запчасти</h2><p>Закупись перед ремонтом</p></div>
+    <div class="top-actions"><div class="wallet glass">💰 <span id="money-parts">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
   <div id="parts-market-list" class="market-list"></div>
 </section>
@@ -160,23 +109,13 @@
 <!-- ЭКРАН 4: МАСТЕРСКАЯ -->
 <section id="screen-workshop" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap">
-      <h2>🔧 Мастерская</h2>
-      <p>Починим всё!</p>
-    </div>
-    <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-workshop">10000</span> ₽</div>
-      <button class="close-btn" data-back>✕</button>
-    </div>
+    <div class="title-wrap"><h2>🔧 Мастерская</h2><p>Починим всё!</p></div>
+    <div class="top-actions"><div class="wallet glass">💰 <span id="money-workshop">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
-
   <div id="workshop-empty" class="empty-state glass">
-    <div class="empty-icon">🔧</div>
-    <h3>Мастерская пуста</h3>
-    <p>Выбери устройство на складе, чтобы начать ремонт</p>
+    <div class="empty-icon">🔧</div><h3>Мастерская пуста</h3><p>Выбери устройство на складе, чтобы начать ремонт</p>
     <button class="btn-primary" data-screen="inventory">Перейти на склад</button>
   </div>
-
   <div id="workshop-active" class="workshop hidden">
     <div id="tutorial-hint" class="tutorial-hint glass">👆 Нажми на телефон</div>
     <div class="repair-stage glass">
@@ -194,16 +133,13 @@
       </div>
       <div id="faults-list" class="faults-list"></div>
     </div>
-
     <div class="parts-title">Твой инвентарь:</div>
     <div id="parts-tray" class="parts-tray glass"></div>
-
     <div id="solder-panel" class="solder-panel glass hidden">
       <div class="solder-title">🔥 Пайка (удерживай палец)</div>
       <div id="solder-zone" class="solder-zone"><div id="solder-progress" class="solder-progress"></div></div>
       <div class="solder-hint">Бонус: <span id="solder-bonus">0</span>%</div>
     </div>
-
     <div class="actions"><button id="btn-finish-repair" class="btn-primary" disabled>Завершить ремонт</button></div>
   </div>
 </section>
@@ -211,14 +147,8 @@
 <!-- ЭКРАН 5: СКЛАД -->
 <section id="screen-inventory" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap">
-      <h2>📦 Склад</h2>
-      <p>Твои устройства</p>
-    </div>
-    <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-inventory">10000</span> ₽</div>
-      <button class="close-btn" data-back>✕</button>
-    </div>
+    <div class="title-wrap"><h2>📦 Склад</h2><p>Твои устройства</p></div>
+    <div class="top-actions"><div class="wallet glass">💰 <span id="money-inventory">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
   <div id="inventory-list" class="market-list"></div>
 </section>
@@ -226,18 +156,11 @@
 <!-- ЭКРАН 6: ПРОФИЛЬ -->
 <section id="screen-profile" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap">
-      <h2>👤 Профиль</h2>
-      <p>Статистика мастера</p>
-    </div>
-    <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-profile">10000</span> ₽</div>
-      <button class="close-btn" data-back>✕</button>
-    </div>
+    <div class="title-wrap"><h2>👤 Профиль</h2><p>Статистика мастера</p></div>
+    <div class="top-actions"><div class="wallet glass">💰 <span id="money-profile">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
   <div class="profile-card glass">
-    <div class="avatar">🛠</div>
-    <h2>Мастер</h2>
+    <div class="avatar">🛠</div><h2>Мастер</h2>
     <div id="stars" class="stars">☆☆☆☆☆</div>
     <div class="muted">Репутация: <span id="rep-value">0</span></div>
   </div>
@@ -253,14 +176,8 @@
 <!-- ЭКРАН 7: БИЗНЕС -->
 <section id="screen-business" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap">
-      <h2>📈 Бизнес</h2>
-      <p>Инвестируй в развитие</p>
-    </div>
-    <div class="top-actions">
-      <div class="wallet glass">💰 <span id="money-business">10000</span> ₽</div>
-      <button class="close-btn" data-back>✕</button>
-    </div>
+    <div class="title-wrap"><h2>📈 Бизнес</h2><p>Инвестируй в развитие</p></div>
+    <div class="top-actions"><div class="wallet glass">💰 <span id="money-business">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
   <div id="business-list" class="business-list"></div>
 </section>

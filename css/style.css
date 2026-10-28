@@ -1,0 +1,174 @@
+/* ============ БАЗА ============ */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #0f1115; color: #e6e6e6;
+  height: 100%; overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+button { font-family: inherit; cursor: pointer; border: none; }
+
+/* ============ ЭКРАНЫ ============ */
+.screen {
+  position: absolute; inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: 12px;
+  overflow-y: auto;
+}
+.screen.active { display: flex; }
+
+/* ============ ТОПБАР ============ */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 10px 12px;
+  background: #171a21; border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  margin-bottom: 12px;
+}
+.brand { font-weight: 700; color: #7ee787; }
+.title { font-weight: 700; }
+.wallet { font-weight: 700; color: #f0c000; font-size: 16px; }
+.back-btn {
+  background: #232830; color: #fff;
+  border-radius: 10px; width: 40px; height: 36px;
+  font-size: 18px;
+}
+
+/* ============ РАБОЧИЙ СТОЛ ============ */
+.desktop-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 16px; padding: 24px 8px;
+  flex: 1; align-content: start;
+}
+.app-icon {
+  background: linear-gradient(180deg, #1c2029, #14171d);
+  border-radius: 20px;
+  padding: 24px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+  color: #fff; transition: transform 0.1s;
+}
+.app-icon:active { transform: scale(0.95); }
+.app-emoji { font-size: 42px; }
+.app-name { font-size: 14px; font-weight: 600; }
+.hint { text-align: center; color: #666; font-size: 12px; padding: 8px; }
+
+/* ============ БАРАХОЛКА ============ */
+.lot-of-day {
+  background: linear-gradient(135deg, #7b1fa2, #4a148c);
+  border-radius: 14px; padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 20px rgba(155, 39, 220, 0.3);
+  position: relative;
+}
+.lot-of-day::before {
+  content: "🔥 ЛОТ ДНЯ"; display: block;
+  font-size: 11px; font-weight: 800; letter-spacing: 1px;
+  opacity: 0.85; margin-bottom: 4px;
+}
+
+.market-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 40px; }
+.lot-card {
+  background: #1a1d24; border-radius: 14px; padding: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+  border: 1px solid #23262e;
+}
+.lot-card.locked { opacity: 0.4; }
+.lot-head { display: flex; justify-content: space-between; align-items: center; }
+.lot-name { font-weight: 700; font-size: 15px; }
+.lot-price { color: #f0c000; font-weight: 700; }
+.lot-faults { font-size: 12px; color: #999; }
+.lot-desc { font-size: 12px; color: #999; font-style: italic; }
+.lot-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ============ МАСТЕРСКАЯ ============ */
+.empty-state {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: #888; text-align: center; gap: 16px;
+}
+.btn-primary {
+  background: #22c55e; color: #0f1115;
+  font-weight: 700; padding: 14px 24px;
+  border-radius: 12px; font-size: 15px;
+}
+.btn-primary:disabled { background: #333; color: #666; }
+.btn-danger {
+  background: #7f1d1d; color: #fff; padding: 12px;
+  border-radius: 12px; margin-top: 24px; font-weight: 600;
+}
+
+.device-card {
+  background: #171a21; border-radius: 12px;
+  padding: 12px; margin-bottom: 10px;
+}
+.muted { color: #888; font-size: 12px; }
+
+.device-zone {
+  background: radial-gradient(circle at center, #1c2130, #0f1115);
+  border: 2px dashed #2a3040;
+  border-radius: 16px;
+  min-height: 200px; padding: 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.device-zone.drop-hover { border-color: #22c55e; background: radial-gradient(circle, #163020, #0f1115); }
+.device-emoji { font-size: 64px; }
+.faults-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.fault-chip {
+  background: #3b1a1a; color: #ff8585;
+  padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 600;
+}
+.fault-chip.fixed { background: #163a20; color: #7ee787; text-decoration: line-through; }
+
+.parts-title { margin: 16px 0 8px; font-size: 13px; color: #aaa; }
+.parts-tray {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  padding: 10px; background: #171a21; border-radius: 12px; min-height: 60px;
+}
+.part-chip {
+  background: #232830; padding: 10px 14px; border-radius: 10px;
+  font-size: 13px; color: #fff; font-weight: 600;
+  cursor: grab; touch-action: none;
+  border: 1px solid #2f3541;
+}
+.part-chip:active { cursor: grabbing; transform: scale(0.95); }
+
+/* Мини-игра "пайка" */
+.solder-panel { margin-top: 14px; background: #171a21; border-radius: 12px; padding: 12px; }
+.solder-title { font-size: 13px; color: #ffab40; margin-bottom: 8px; font-weight: 700; }
+.solder-zone {
+  position: relative; height: 70px; background: #0b0d11;
+  border-radius: 10px; overflow: hidden; touch-action: none;
+  border: 1px solid #2a3040;
+}
+.solder-progress {
+  position: absolute; inset: 0; width: 0%;
+  background: linear-gradient(90deg, #ff6b00, #ffab40);
+  transition: width 0.05s;
+}
+.solder-hint { font-size: 12px; color: #888; margin-top: 6px; text-align: center; }
+.solder-hint span { color: #ffab40; font-weight: 700; }
+
+.actions { margin-top: 16px; }
+.actions .btn-primary { width: 100%; }
+
+/* ============ ПРОФИЛЬ ============ */
+.profile-card {
+  background: #171a21; border-radius: 16px;
+  padding: 24px; text-align: center; margin-bottom: 12px;
+}
+.avatar { font-size: 56px; }
+.profile-card h2 { margin: 8px 0; }
+.stars { font-size: 26px; color: #f0c000; letter-spacing: 4px; }
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat { background: #171a21; border-radius: 12px; padding: 14px; }
+.stat-label { font-size: 12px; color: #888; }
+.stat-value { font-size: 22px; font-weight: 800; color: #7ee787; margin-top: 4px; }
+
+/* ============ УТИЛИТЫ ============ */
+.hidden { display: none !important; }

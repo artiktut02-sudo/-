@@ -74,8 +74,18 @@
     <div class="title-wrap"><h2>🏪 Устройства</h2><p>Найди технику для ремонта</p></div>
     <div class="top-actions"><div class="wallet glass">💰 <span id="money-market">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
+  
+  <input type="text" id="market-search" placeholder="🔍 Поиск устройства..." oninput="window.searchMarket(this.value)" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #fff; outline: none; font-size: 14px;">
+
+  <div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px; scrollbar-width:none;">
+    <button class="filter-btn active" onclick="window.filterMarket('all')" id="fm-btn-all">Все</button>
+    <button class="filter-btn" onclick="window.filterMarket('phone')" id="fm-btn-phone">📱 Телефоны</button>
+    <button class="filter-btn" onclick="window.filterMarket('pc')" id="fm-btn-pc">🖥 Компьютеры</button>
+  </div>
+
   <div id="lot-of-day" class="lot-of-day hidden"></div>
   <div id="market-list" class="market-list"></div>
+  <button id="load-more-market" class="btn-primary" style="margin-top: 16px; display: none;" onclick="window.loadMoreMarket()">Показать ещё</button>
 </section>
 
 <!-- ЭКРАН ДЕТАЛЕЙ (ОЗОН) -->
@@ -100,10 +110,20 @@
 <!-- ЭКРАН 3: ЗАПЧАСТИ -->
 <section id="screen-parts-market" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap"><h2>⚙️ Запчасти</h2><p>Закупись перед ремонтом</p></div>
+    <div class="title-wrap"><h2>⚙️ Запчасти</h2><p>Выбери категорию</p></div>
     <div class="top-actions"><div class="wallet glass">💰 <span id="money-parts">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
+  
+  <input type="text" id="parts-search" placeholder="🔍 Поиск запчасти..." oninput="window.searchParts(this.value)" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #fff; outline: none; font-size: 14px;">
+
+  <div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px; scrollbar-width:none;">
+    <button class="filter-btn active" onclick="window.filterParts('phone')" id="f-btn-phone">📱 Смартфоны</button>
+    <button class="filter-btn" onclick="window.filterParts('pc')" id="f-btn-pc">🖥 ПК / Ноутбуки</button>
+    <button class="filter-btn" onclick="window.filterParts('all')" id="f-btn-all">Все</button>
+  </div>
+
   <div id="parts-market-list" class="market-list"></div>
+  <button id="load-more-parts" class="btn-primary" style="margin-top: 16px; display: none;" onclick="window.loadMoreParts()">Показать ещё</button>
 </section>
 
 <!-- ЭКРАН 4: МАСТЕРСКАЯ -->

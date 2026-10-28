@@ -45,7 +45,6 @@ jobs:
     - name: Sync web assets
       run: npx cap sync
 
-    # --- ГЕНЕРИРУЕМ КЛЮЧ И ПОДПИСЫВАЕМ ---
     - name: Generate Keystore
       run: |
         cd android/app
@@ -58,7 +57,7 @@ jobs:
         ./gradlew assembleRelease \
           -Pandroid.injected.signing.store.file=$(pwd)/app/my-release-key.keystore \
           -Pandroid.injected.signing.store.password=password123 \
-          -Pandroid.injecting.signing.key.alias=my-key-alias \
+          -Pandroid.injected.signing.key.alias=my-key-alias \
           -Pandroid.injected.signing.key.password=password123
 
     - name: Upload APK

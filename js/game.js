@@ -30,7 +30,7 @@ function checkSaleStatus() {
     if (Date.now() >= G.activeSale.endTime) {
       G.money += G.activeSale.price;
       G.stats.sales += 1; 
-      if (!G.activeSale.isBroken) G.stats.repairs += 1; // Если продали починенный
+      if (!G.activeSale.isBroken) G.stats.repairs += 1;
       
       if (G.activeSale.profit >= 0) { G.stats.earned += G.activeSale.profit; G.reputation += 5; } 
       else { G.stats.losses += 1; }
@@ -64,8 +64,7 @@ function showScreen(id) {
   els.screens.forEach(s => s.classList.toggle("active", s.id === "screen-" + id));
   if (id === "market") renderMarket();
   if (id === "parts-market") {
-    currentPartsFilter = "all";
-    partsLimit = 20;
+    currentPartsFilter = "all"; partsLimit = 20;
     document.querySelectorAll("#screen-parts-market .filter-btn").forEach(b => b.classList.remove("active"));
     document.getElementById("f-btn-all")?.classList.add("active");
     renderPartsMarket();
@@ -103,7 +102,6 @@ window.loadMoreParts = function() { partsLimit += 20; renderPartsMarket(); };
 
 function renderMarket() {
   let visibleLots = LOTS.filter(l => l.reqRep <= G.reputation);
-  
   if (currentMarketFilter !== "all") visibleLots = visibleLots.filter(l => DEVICES[l.device].type === currentMarketFilter);
   if (marketSearchText) visibleLots = visibleLots.filter(l => DEVICES[l.device].name.toLowerCase().includes(marketSearchText.toLowerCase()));
 
@@ -134,7 +132,6 @@ function renderMarket() {
 
 function renderPartsMarket() {
   let visibleParts = Object.keys(PARTS);
-  
   if (currentPartsFilter !== "all") visibleParts = visibleParts.filter(id => PARTS[id].type === currentPartsFilter);
   if (partsSearchText) visibleParts = visibleParts.filter(id => PARTS[id].name.toLowerCase().includes(partsSearchText.toLowerCase()));
 
@@ -196,7 +193,7 @@ function buyLot(lotId, withDiscount) {
   G.money -= price;
   G.inventory.push({
     lotId: lot.id, device: lot.device, buyPrice: price, faults: lot.faults.map(f => ({ id: f, done: false })),
-    bonus: 0, solderDone: false, repairId: Date.now(), backCoverClosed: false
+    bonus: 0, solderDone: false, repairId: Date.now(), backCoverClosed: false, backCoverRemoved: false, batteryRemoved: false
   });
   saveGame(G); updateMoneyUI(); updateInventoryUI();
   alert("📦 Устройство куплено!");
@@ -220,7 +217,7 @@ function renderInventory() {
     const isFixed = item.faults.every(f => f.done) && item.backCoverClosed;
     const lot = LOTS.find(l => l.id === item.lotId);
     const sellPrice = lot ? Math.round(lot.sell * (1 + (item.bonus/100))) : 0;
-    const brokenPrice = lot ? Math.round(lot.buy * 0.5) : 0; // Цена продажи как есть (50% от покупки)
+    const brokenPrice = lot ? Math.round(lot.buy * 0.5) : 0; 
     
     return `
       <div class="lot-card">
@@ -241,21 +238,12 @@ function renderInventory() {
   }).join("");
 }
 
-// НОВАЯ ФУНКЦИЯ: Продажа сломанного устройства
 window.listBrokenOnMarket = function(repairId, price) {
   if (!confirm(`Вы уверены, что хотите продать СЛОМАННОЕ устройство за ${fmt(price)} ₽? \n(Покупатель будет искать его 30 секунд)`)) return;
-  
   const idx = G.inventory.findIndex(i => i.repairId === repairId);
   if (idx === -1) return;
   const item = G.inventory[idx];
-  
-  G.activeSale = { 
-    lotId: item.lotId, 
-    price: price, 
-    profit: price - item.buyPrice, 
-    endTime: Date.now() + 30000, // 30 секунд для сломанного
-    isBroken: true 
-  };
+  G.activeSale = { lotId: item.lotId, price: price, profit: price - item.buyPrice, endTime: Date.now() + 30000, isBroken: true };
   G.inventory.splice(idx, 1);
   saveGame(G); updateInventoryUI(); renderInventory();
   alert("📈 Сломанное устройство выставлено на продажу! Ждем покупателя (30 сек).");
@@ -274,6 +262,10 @@ function renderWorkshop() {
   els.workshopEmpty.classList.add("hidden"); els.workshopActive.classList.remove("hidden");
   const r = G.activeRepair;
   const dev = DEVICES[r.device];
+
+  // ЕСЛИ НЕТ ПОЛОМКИ БАТАРЕИ, СЧИТАЕМ КРЫШКУ ЗАКРЫТОЙ АВТОМАТИЧЕСКИ
+  const hasBatteryFault = r.faults.some(f => PARTS[f.id]?.key === "battery");
+  if (!hasBatteryFault) r.backCoverClosed = true;
 
   const svgScreen = document.getElementById("svg-screen");
   const svgDefs = document.querySelector("#device-svg defs");
@@ -301,7 +293,8 @@ function renderWorkshop() {
   const deviceDropZone = document.getElementById("device-wrapper-click");
   if (deviceDropZone) {
     bindDragDrop(els.partsTray, deviceDropZone, partId => {
-      const fault = r.faults.find(f => f.id === partId && !f.done);
+      // Ищем поломку по КЛЮЧУ, а не по ID (чтобы Ур.1 и Ур.5 считались одним и тем же)
+      const fault = r.faults.find(f => PARTS[f.id]?.key === PARTS[partId]?.key && !f.done);
       
       if (PARTS[partId].type !== dev.type) {
          return alert("❌ Эта запчасть не подходит к этому устройству!");
@@ -334,6 +327,7 @@ function renderWorkshop() {
     els.solderPanel.classList.remove("hidden"); els.solderProgress.style.width = "100%"; els.solderBonus.textContent = r.bonus;
   } else { els.solderPanel.classList.add("hidden"); }
 
+  // ЕСЛИ ВСЕ ПОЧИНЕНО И КРЫШКА ЗАКРЫТА (или не требовалась)
   const canFinish = allFixed && r.backCoverClosed;
   els.btnFinishRepair.disabled = !canFinish;
   els.btnFinishRepair.textContent = canFinish ? "Отправить на склад" : (allFixed && !r.backCoverClosed ? "Закройте крышку!" : "Завершить ремонт");
@@ -354,7 +348,6 @@ window.listOnMarket = function(repairId) {
   const item = G.inventory[idx];
   const lot = LOTS.find(l => l.id === item.lotId);
   const sellPrice = lot ? Math.round(lot.sell * (1 + ((item.bonus + (G.upgrades.fastSale ? 20 : 0))/100))) : item.buyPrice * 2;
-  
   G.activeSale = { lotId: item.lotId, price: sellPrice, profit: sellPrice - item.buyPrice, endTime: Date.now() + 15000, isBroken: false };
   G.inventory.splice(idx, 1);
   saveGame(G); updateInventoryUI(); renderInventory();

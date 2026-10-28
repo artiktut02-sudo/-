@@ -6,7 +6,7 @@ function renderPartsTray(partIds, container) {
     const count = G.ownedParts[id] || 0;
     if (count <= 0) return "";
     return `<div class="part-chip" draggable="true" data-part="${p.id}">${p.svg} ${p.name} (${count})</div>`;
-  }).join("") || `<div style="color:#888; padding:10px; font-size:13px;">Нет нужных запчастей! Купи их в магазине (⚙️).</div>`;
+  }).join("") || `<div style="color:#888; padding:10px; font-size:13px;">Нет нужных запчастей!</div>`;
 }
 
 function bindDragDrop(trayEl, dropEl, onDrop) {
@@ -47,7 +47,6 @@ function startSolderGame(zoneEl, progressEl, bonusEl, onFinish) {
   const state = RepairUI.solder; state.active = false; state.progress = 0; state.bonus = 0;
   progressEl.style.width = "0%"; bonusEl.textContent = "0";
   const maxBonus = 30 + (G.upgrades.solderBonus || 0);
-
   const tick = () => {
     if (!state.active) return;
     state.progress = Math.min(100, state.progress + 0.8);
@@ -69,35 +68,27 @@ function resetSolderUI(progressEl, bonusEl) { progressEl.style.width = "0%"; bon
 function renderDeviceMechanics(r) {
   const partsLayer = document.getElementById("device-parts-layer");
   const tutorial = document.getElementById("tutorial-hint");
-  partsLayer.innerHTML = ""; 
-  tutorial.classList.add("hidden");
-
+  partsLayer.innerHTML = ""; tutorial.classList.add("hidden");
   const hasBatteryFault = r.faults.some(f => PARTS[f.id]?.name.includes("Батарея"));
   if (!hasBatteryFault) return; 
-
   const batteryFault = r.faults.find(f => PARTS[f.id]?.name.includes("Батарея"));
-
   if (!r.backCoverRemoved) {
-    tutorial.classList.remove("hidden");
-    tutorial.textContent = "👆 Нажми на телефон, чтобы снять крышку (нужно для батареи)";
+    tutorial.classList.remove("hidden"); tutorial.textContent = "👆 Снять крышку";
     partsLayer.innerHTML = `<div class="interactive-cover" onclick="window.toggleCover(true)"><span>🔩 Снять крышку</span></div>`;
     return;
   }
   if (!r.batteryRemoved) {
-    tutorial.classList.remove("hidden");
-    tutorial.textContent = "👆 Нажми на батарею, чтобы извлечь её";
+    tutorial.classList.remove("hidden"); tutorial.textContent = "👆 Извлечь батарею";
     partsLayer.innerHTML = `<div class="interactive-battery" onclick="window.removeBattery()"><span>🔋 Извлечь</span></div>`;
     return;
   }
   if (!batteryFault.done) {
-    tutorial.classList.remove("hidden");
-    tutorial.textContent = "👇 Перетащи новую батарею из инвентаря";
+    tutorial.classList.remove("hidden"); tutorial.textContent = "👇 Перетащи новую батарею";
     partsLayer.innerHTML = `<div style="position:absolute; top:140px; left:30px; width:120px; height:80px; border:2px dashed #555; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px; background:rgba(0,0,0,0.5); pointer-events: auto;">Сюда батарею</div>`;
     return;
   }
   if (batteryFault.done && !r.backCoverClosed) {
-    tutorial.classList.remove("hidden");
-    tutorial.textContent = "👆 Нажми, чтобы закрыть крышку";
+    tutorial.classList.remove("hidden"); tutorial.textContent = "👆 Закрыть крышку";
     partsLayer.innerHTML = `<div class="interactive-cover" onclick="window.toggleCover(false)"><span>✅ Закрыть крышку</span></div>`;
   }
 }

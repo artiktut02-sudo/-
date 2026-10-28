@@ -1,1 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f1115" />
+  <title>ТехноБарахолка</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
 
+<!-- ============ ЭКРАН 1: РАБОЧИЙ СТОЛ ============ -->
+<section id="screen-desktop" class="screen active">
+  <header class="topbar">
+    <div class="brand">🛠 ТехноБарахолка</div>
+    <div class="wallet">💰 <span id="money-desktop">2000</span> ₽</div>
+  </header>
+
+  <div class="desktop-grid">
+    <button class="app-icon" data-screen="market">
+      <span class="app-emoji">🏪</span>
+      <span class="app-name">Барахолка</span>
+    </button>
+    <button class="app-icon" data-screen="workshop">
+      <span class="app-emoji">🔧</span>
+      <span class="app-name">Мастерская</span>
+    </button>
+    <button class="app-icon" data-screen="profile">
+      <span class="app-emoji">👤</span>
+      <span class="app-name">Профиль</span>
+    </button>
+    <button class="app-icon" data-screen="business">
+      <span class="app-emoji">📈</span>
+      <span class="app-name">Бизнес</span>
+    </button>
+  </div>
+
+  <div class="hint">Нажми на иконку, чтобы открыть приложение</div>
+</section>
+
+<!-- ============ ЭКРАН 2: БАРАХОЛКА ============ -->
+<section id="screen-market" class="screen">
+  <header class="topbar">
+    <button class="back-btn" data-back>←</button>
+    <div class="title">🏪 Барахолка</div>
+    <div class="wallet">💰 <span id="money-market">2000</span> ₽</div>
+  </header>
+
+  <div id="lot-of-day" class="lot-of-day hidden"></div>
+
+  <div id="market-list" class="market-list"></div>
+</section>
+
+<!-- ============ ЭКРАН 3: МАСТЕРСКАЯ ============ -->
+<section id="screen-workshop" class="screen">
+  <header class="topbar">
+    <button class="back-btn" data-back>←</button>
+    <div class="title">🔧 Мастерская</div>
+    <div class="wallet">💰 <span id="money-workshop">2000</span> ₽</div>
+  </header>
+
+  <div id="workshop-empty" class="empty-state">
+    <p>Тут пусто. Купи сломанный девайс на барахолке,<br>чтобы начать ремонт.</p>
+    <button class="btn-primary" data-screen="market">На барахолку</button>
+  </div>
+
+  <div id="workshop-active" class="workshop hidden">
+    <div class="device-card">
+      <h3 id="device-name">—</h3>
+      <p class="muted">Перетащи запчасть на девайс, чтобы устранить поломку</p>
+    </div>
+
+    <div id="device-zone" class="device-zone">
+      <div class="device-emoji" id="device-emoji">📱</div>
+      <div id="faults-list" class="faults-list"></div>
+    </div>
+
+    <div class="parts-title">Запчасти в мастерской:</div>
+    <div id="parts-tray" class="parts-tray"></div>
+
+    <div id="solder-panel" class="solder-panel hidden">
+      <div class="solder-title">🔥 Пайка (удерживай палец в зоне)</div>
+      <div id="solder-zone" class="solder-zone">
+        <div id="solder-progress" class="solder-progress"></div>
+      </div>
+      <div class="solder-hint">Бонус к цене продажи: <span id="solder-bonus">0</span>%</div>
+    </div>
+
+    <div class="actions">
+      <button id="btn-sell" class="btn-primary" disabled>Продать девайс</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ЭКРАН 4: ПРОФИЛЬ ============ -->
+<section id="screen-profile" class="screen">
+  <header class="topbar">
+    <button class="back-btn" data-back>←</button>
+    <div class="title">👤 Профиль</div>
+    <div class="wallet">💰 <span id="money-profile">2000</span> ₽</div>
+  </header>
+
+  <div class="profile-card">
+    <div class="avatar">🛠</div>
+    <h2>Мастер</h2>
+    <div id="stars" class="stars">☆☆☆☆☆</div>
+    <div class="muted">Репутация: <span id="rep-value">0</span></div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat"><div class="stat-label">Ремонтов</div><div class="stat-value" id="stat-repairs">0</div></div>
+    <div class="stat"><div class="stat-label">Заработано</div><div class="stat-value" id="stat-earned">0 ₽</div></div>
+    <div class="stat"><div class="stat-label">Продаж</div><div class="stat-value" id="stat-sales">0</div></div>
+    <div class="stat"><div class="stat-label">Убытков</div><div class="stat-value" id="stat-losses">0</div></div>
+  </div>
+
+  <button id="btn-reset" class="btn-danger">Сбросить прогресс</button>
+</section>
+
+<!-- ============ ЭКРАН 5: БИЗНЕС ============ -->
+<section id="screen-business" class="screen">
+  <header class="topbar">
+    <button class="back-btn" data-back>←</button>
+    <div class="title">📈 Бизнес</div>
+    <div class="wallet">💰 <span id="money-business">2000</span> ₽</div>
+  </header>
+
+  <div class="empty-state">
+    <p>Апгрейды появятся в v1.1:<br>скидки на запчасти, больше лотов,<br>быстрый ремонт.</p>
+  </div>
+</section>
+
+<!-- ============ СКРИПТЫ ============ -->
+<script src="js/save.js"></script>
+<script src="js/economy.js"></script>
+<script src="js/repair.js"></script>
+<script src="js/game.js"></script>
+
+</body>
+</html>

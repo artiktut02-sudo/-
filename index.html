@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-<div class="bg-glow"></div> <!-- Фоновое свечение -->
+<div class="bg-glow"></div>
 
 <!-- ЭКРАН 1: РАБОЧИЙ СТОЛ -->
 <section id="screen-desktop" class="screen active">
@@ -25,6 +25,10 @@
       <div class="icon-bg" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">🔧</div>
       <span class="app-name">Мастерская</span>
     </button>
+    <button class="app-icon glass" data-screen="inventory">
+      <div class="icon-bg" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">📦</div>
+      <span class="app-name">Склад</span>
+    </button>
     <button class="app-icon glass" data-screen="profile">
       <div class="icon-bg" style="background: linear-gradient(135deg, #84fab0, #8fd3f4);">👤</div>
       <span class="app-name">Профиль</span>
@@ -36,7 +40,7 @@
   </div>
 </section>
 
-<!-- ЭКРАН 2: БАРАХОЛКА (Маркетплейс) -->
+<!-- ЭКРАН 2: БАРАХОЛКА -->
 <section id="screen-market" class="screen">
   <header class="topbar glass">
     <button class="back-btn" data-back>←</button>
@@ -61,20 +65,37 @@
   </div>
 
   <div id="workshop-active" class="workshop hidden">
+    <!-- Подсказка для новичка -->
+    <div id="tutorial-hint" class="tutorial-hint glass">
+      👆 Нажми на телефон, чтобы снять крышку
+    </div>
+
     <div class="repair-stage glass">
-      <div class="device-wrapper">
+      <div class="device-wrapper" id="device-wrapper-click">
         <svg id="device-svg" viewBox="0 0 200 400" class="device-svg">
           <defs>
             <linearGradient id="screenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stop-color="#1a1d24"/>
               <stop offset="100%" stop-color="#0f1115"/>
             </linearGradient>
+            <!-- Градиент для текстур платы -->
+            <linearGradient id="pcbGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#0a2a12"/>
+              <stop offset="100%" stop-color="#114b22"/>
+            </linearGradient>
+            <linearGradient id="batteryGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#222"/>
+              <stop offset="100%" stop-color="#444"/>
+            </linearGradient>
           </defs>
           <rect x="10" y="10" width="180" height="380" rx="30" fill="#1a1d24" stroke="#333" stroke-width="4"/>
-          <rect x="20" y="40" width="160" height="320" rx="20" fill="url(#screenGrad)" id="svg-screen"/>
+          <!-- Имитация платы внутри -->
+          <rect x="20" y="40" width="160" height="320" rx="20" fill="url(#pcbGrad)" id="svg-screen"/>
+          <!-- Дорожки на плате -->
+          <path d="M30 80 L170 80 M30 120 L170 120 M30 200 L170 200 M50 250 L150 250" stroke="#1f6b2a" stroke-width="2" fill="none" opacity="0.5"/>
           <rect x="85" y="15" width="30" height="4" rx="2" fill="#444"/>
         </svg>
-        <!-- Слой для механик (крышка, батарея) -->
+        <!-- Слой механик (Крышка, Батарея) -->
         <div id="device-parts-layer" class="device-parts-layer"></div>
       </div>
       <div id="faults-list" class="faults-list"></div>
@@ -90,12 +111,26 @@
     </div>
 
     <div class="actions">
-      <button id="btn-sell" class="btn-primary" disabled>Продать девайс</button>
+      <button id="btn-finish-repair" class="btn-primary" disabled>Завершить ремонт</button>
     </div>
   </div>
 </section>
 
-<!-- ЭКРАН 4: ПРОФИЛЬ -->
+<!-- ЭКРАН 4: СКЛАД (НОВЫЙ) -->
+<section id="screen-inventory" class="screen">
+  <header class="topbar glass">
+    <button class="back-btn" data-back>←</button>
+    <div class="title">📦 Склад</div>
+    <div class="wallet glass">💰 <span id="money-inventory">2000</span> ₽</div>
+  </header>
+  <div id="inventory-empty" class="empty-state glass">
+    <p>На складе пока пусто.</p>
+    <button class="btn-primary" data-screen="workshop">В мастерскую</button>
+  </div>
+  <div id="inventory-list" class="market-list"></div>
+</section>
+
+<!-- ЭКРАН 5: ПРОФИЛЬ -->
 <section id="screen-profile" class="screen">
   <header class="topbar glass">
     <button class="back-btn" data-back>←</button>
@@ -117,7 +152,7 @@
   <button id="btn-reset" class="btn-danger">Сбросить прогресс</button>
 </section>
 
-<!-- ЭКРАН 5: БИЗНЕС (Имба-апгрейды) -->
+<!-- ЭКРАН 6: БИЗНЕС -->
 <section id="screen-business" class="screen">
   <header class="topbar glass">
     <button class="back-btn" data-back>←</button>

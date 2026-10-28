@@ -15,7 +15,7 @@ const els = {
 
 let activeDetailLotId = null;
 let currentMarketFilter = "all";
-let currentPartsFilter = "all"; // По умолчанию "Все"
+let currentPartsFilter = "all"; 
 let marketSearchText = "";
 let partsSearchText = "";
 let marketLimit = 20;
@@ -29,12 +29,17 @@ function checkSaleStatus() {
   if (G.activeSale) {
     if (Date.now() >= G.activeSale.endTime) {
       G.money += G.activeSale.price;
-      G.stats.sales += 1; G.stats.repairs += 1;
-      if (G.activeSale.profit >= 0) { G.stats.earned += G.activeSale.profit; G.reputation += 5; } else { G.stats.losses += 1; }
+      G.stats.sales += 1; 
+      if (!G.activeSale.isBroken) G.stats.repairs += 1; // Если продали починенный
+      
+      if (G.activeSale.profit >= 0) { G.stats.earned += G.activeSale.profit; G.reputation += 5; } 
+      else { G.stats.losses += 1; }
+      
       G.soldLotIds.push(G.activeSale.lotId);
+      const msg = G.activeSale.isBroken ? "📦 Сломанное устройство продано!" : "💰 Покупатель нашелся! Деньги зачислены.";
       G.activeSale = null;
       saveGame(G); updateMoneyUI();
-      alert("💰 Покупатель нашелся! Деньги зачислены.");
+      alert(msg);
       showScreen("inventory");
     }
   }
@@ -74,8 +79,7 @@ function showScreen(id) {
 }
 
 window.filterMarket = function(type) {
-  currentMarketFilter = type;
-  marketLimit = 20;
+  currentMarketFilter = type; marketLimit = 20;
   document.querySelectorAll("#screen-market .filter-btn").forEach(b => b.classList.remove("active"));
   if(type === 'all') document.getElementById("fm-btn-all")?.classList.add("active");
   if(type === 'phone') document.getElementById("fm-btn-phone")?.classList.add("active");
@@ -84,8 +88,7 @@ window.filterMarket = function(type) {
 };
 
 window.filterParts = function(type) {
-  currentPartsFilter = type;
-  partsLimit = 20;
+  currentPartsFilter = type; partsLimit = 20;
   document.querySelectorAll("#screen-parts-market .filter-btn").forEach(b => b.classList.remove("active"));
   if(type === 'all') document.getElementById("f-btn-all")?.classList.add("active");
   if(type === 'phone') document.getElementById("f-btn-phone")?.classList.add("active");
@@ -93,27 +96,10 @@ window.filterParts = function(type) {
   renderPartsMarket();
 };
 
-window.searchMarket = function(text) {
-  marketSearchText = text;
-  marketLimit = 20;
-  renderMarket();
-};
-
-window.searchParts = function(text) {
-  partsSearchText = text;
-  partsLimit = 20;
-  renderPartsMarket();
-};
-
-window.loadMoreMarket = function() {
-  marketLimit += 20;
-  renderMarket();
-};
-
-window.loadMoreParts = function() {
-  partsLimit += 20;
-  renderPartsMarket();
-};
+window.searchMarket = function(text) { marketSearchText = text; marketLimit = 20; renderMarket(); };
+window.searchParts = function(text) { partsSearchText = text; partsLimit = 20; renderPartsMarket(); };
+window.loadMoreMarket = function() { marketLimit += 20; renderMarket(); };
+window.loadMoreParts = function() { partsLimit += 20; renderPartsMarket(); };
 
 function renderMarket() {
   let visibleLots = LOTS.filter(l => l.reqRep <= G.reputation);
@@ -234,6 +220,8 @@ function renderInventory() {
     const isFixed = item.faults.every(f => f.done) && item.backCoverClosed;
     const lot = LOTS.find(l => l.id === item.lotId);
     const sellPrice = lot ? Math.round(lot.sell * (1 + (item.bonus/100))) : 0;
+    const brokenPrice = lot ? Math.round(lot.buy * 0.5) : 0; // Цена продажи как есть (50% от покупки)
+    
     return `
       <div class="lot-card">
         <div class="lot-icon">${dev.svg}</div>
@@ -243,14 +231,35 @@ function renderInventory() {
             ? `<div class="lot-price">К продаже: ${fmt(sellPrice)} ₽</div><div class="lot-faults" style="color:#22c55e;">✅ Готов к продаже</div>`
             : `<div class="lot-price" style="color:#ff6b6b;">Сломан</div><div class="lot-faults">Требует ремонта</div>`}
         </div>
-        <div>
+        <div style="display:flex; flex-direction:column; gap:5px;">
           ${isFixed 
             ? `<button class="btn-primary" onclick="window.listOnMarket(${item.repairId})">Выставить</button>`
-            : `<button class="btn-primary" style="background:linear-gradient(135deg,#f59e0b,#d97706);" onclick="window.startRepair(${item.repairId})">Починить</button>`}
+            : `<button class="btn-primary" style="background:linear-gradient(135deg,#f59e0b,#d97706);" onclick="window.startRepair(${item.repairId})">Починить</button>
+               <button class="btn-primary" style="background:#555; font-size:11px; padding:6px 10px;" onclick="window.listBrokenOnMarket(${item.repairId}, ${brokenPrice})">Продать как есть (${fmt(brokenPrice)} ₽)</button>`}
         </div>
       </div>`;
   }).join("");
 }
+
+// НОВАЯ ФУНКЦИЯ: Продажа сломанного устройства
+window.listBrokenOnMarket = function(repairId, price) {
+  if (!confirm(`Вы уверены, что хотите продать СЛОМАННОЕ устройство за ${fmt(price)} ₽? \n(Покупатель будет искать его 30 секунд)`)) return;
+  
+  const idx = G.inventory.findIndex(i => i.repairId === repairId);
+  if (idx === -1) return;
+  const item = G.inventory[idx];
+  
+  G.activeSale = { 
+    lotId: item.lotId, 
+    price: price, 
+    profit: price - item.buyPrice, 
+    endTime: Date.now() + 30000, // 30 секунд для сломанного
+    isBroken: true 
+  };
+  G.inventory.splice(idx, 1);
+  saveGame(G); updateInventoryUI(); renderInventory();
+  alert("📈 Сломанное устройство выставлено на продажу! Ждем покупателя (30 сек).");
+};
 
 window.startRepair = function(repairId) {
   const idx = G.inventory.findIndex(i => i.repairId === repairId);
@@ -346,7 +355,7 @@ window.listOnMarket = function(repairId) {
   const lot = LOTS.find(l => l.id === item.lotId);
   const sellPrice = lot ? Math.round(lot.sell * (1 + ((item.bonus + (G.upgrades.fastSale ? 20 : 0))/100))) : item.buyPrice * 2;
   
-  G.activeSale = { lotId: item.lotId, price: sellPrice, profit: sellPrice - item.buyPrice, endTime: Date.now() + 15000 };
+  G.activeSale = { lotId: item.lotId, price: sellPrice, profit: sellPrice - item.buyPrice, endTime: Date.now() + 15000, isBroken: false };
   G.inventory.splice(idx, 1);
   saveGame(G); updateInventoryUI(); renderInventory();
   alert("📈 Выставлено на продажу! Ждем покупателя (15 сек).");

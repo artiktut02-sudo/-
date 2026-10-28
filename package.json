@@ -1,0 +1,13 @@
+{
+  "name": "tehnobaraholka",
+  "version": "1.0.0",
+  "description": "Игра-симулятор перекупа",
+  "scripts": {
+    "build": "echo 'No build step needed'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  }
+}

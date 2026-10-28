@@ -17,6 +17,7 @@ function bindDragDrop(trayEl, dropEl, onDrop) {
     });
   });
   
+  // Вешаем на всю зону телефона (чтобы не промахиваться)
   dropEl.addEventListener("dragover", e => { e.preventDefault(); });
   dropEl.addEventListener("drop", e => {
     e.preventDefault();
@@ -98,18 +99,22 @@ function renderDeviceMechanics(r) {
     partsLayer.innerHTML = `<div class="interactive-cover" onclick="window.toggleCover(true)"><span>🔩 Снять крышку</span></div>`;
     return;
   }
+  
   if (!r.batteryRemoved) {
     tutorial.classList.remove("hidden");
     tutorial.textContent = "👆 Нажми на батарею, чтобы извлечь её";
     partsLayer.innerHTML = `<div class="interactive-battery" onclick="window.removeBattery()"><span>🔋 Извлечь</span></div>`;
     return;
   }
+  
   if (!batteryFault.done) {
     tutorial.classList.remove("hidden");
     tutorial.textContent = "👇 Перетащи новую батарею из инвентаря";
-    partsLayer.innerHTML = `<div style="position:absolute; top:140px; left:30px; width:120px; height:80px; border:2px dashed #555; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px; background:rgba(0,0,0,0.5);">Сюда батарею</div>`;
+    // Убрал pointer-events: none, чтобы можно было кидать прямо в эту зону
+    partsLayer.innerHTML = `<div style="position:absolute; top:140px; left:30px; width:120px; height:80px; border:2px dashed #555; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px; background:rgba(0,0,0,0.5); pointer-events: auto;">Сюда батарею</div>`;
     return;
   }
+  
   if (batteryFault.done && !r.backCoverClosed) {
     tutorial.classList.remove("hidden");
     tutorial.textContent = "👆 Нажми, чтобы закрыть крышку";

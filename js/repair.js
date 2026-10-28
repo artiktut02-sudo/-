@@ -6,38 +6,55 @@ function renderPartsTray(partIds, container) {
     const count = G.ownedParts[id] || 0;
     if (count <= 0) return "";
     return `<div class="part-chip" draggable="true" data-part="${p.id}">${p.svg} ${p.name} (${count})</div>`;
-  }).join("") || `<div style="color:#888; padding:10px;">У тебя нет нужных запчастей! Купи их в маркетплейсе запчастей.</div>`;
+  }).join("") || `<div style="color:#888; padding:10px; font-size:13px;">Нет нужных запчастей! Купи их в магазине запчастей (⚙️).</div>`;
 }
 
 function bindDragDrop(trayEl, dropEl, onDrop) {
+  // Для компьютера (Drag & Drop)
   trayEl.querySelectorAll(".part-chip").forEach(chip => {
-    chip.addEventListener("dragstart", e => { e.dataTransfer.setData("text/plain", chip.dataset.part); });
+    chip.addEventListener("dragstart", e => { 
+      e.dataTransfer.setData("text/plain", chip.dataset.part); 
+    });
   });
+  
   dropEl.addEventListener("dragover", e => { e.preventDefault(); });
   dropEl.addEventListener("drop", e => {
     e.preventDefault();
     const partId = e.dataTransfer.getData("text/plain");
     if (partId) onDrop(partId);
   });
+
+  // Для телефона (Touch)
   trayEl.querySelectorAll(".part-chip").forEach(chip => {
     let ghost = null;
     chip.addEventListener("touchstart", e => {
       const t = e.touches[0];
       ghost = chip.cloneNode(true);
-      ghost.style.position = "fixed"; ghost.style.left = (t.clientX - 40) + "px"; ghost.style.top = (t.clientY - 24) + "px";
-      ghost.style.zIndex = 9999; ghost.style.pointerEvents = "none";
-      document.body.appendChild(ghost); e.preventDefault();
+      ghost.style.position = "fixed"; 
+      ghost.style.left = (t.clientX - 40) + "px"; 
+      ghost.style.top = (t.clientY - 24) + "px";
+      ghost.style.zIndex = 9999; 
+      ghost.style.pointerEvents = "none";
+      ghost.style.opacity = "0.9";
+      document.body.appendChild(ghost); 
+      e.preventDefault();
     }, { passive: false });
+
     chip.addEventListener("touchmove", e => {
       if (!ghost) return;
       const t = e.touches[0];
-      ghost.style.left = (t.clientX - 40) + "px"; ghost.style.top = (t.clientY - 24) + "px"; e.preventDefault();
+      ghost.style.left = (t.clientX - 40) + "px"; 
+      ghost.style.top = (t.clientY - 24) + "px"; 
+      e.preventDefault();
     }, { passive: false });
+
     chip.addEventListener("touchend", e => {
       if (!ghost) return;
-      const t = e.changedTouches[0]; const rect = dropEl.getBoundingClientRect();
+      const t = e.changedTouches[0]; 
+      const rect = dropEl.getBoundingClientRect();
       const inside = t.clientX >= rect.left && t.clientX <= rect.right && t.clientY >= rect.top && t.clientY <= rect.bottom;
-      ghost.remove(); ghost = null;
+      ghost.remove(); 
+      ghost = null;
       if (inside) onDrop(chip.dataset.part);
     });
   });

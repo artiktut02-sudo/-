@@ -1,0 +1,8 @@
+{
+  "appId": "com.tehnobaraholka.app",
+  "appName": "ТехноБарахолка",
+  "webDir": ".",
+  "server": {
+    "androidScheme": "https"
+  }
+}

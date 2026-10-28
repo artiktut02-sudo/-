@@ -1,6 +1,5 @@
 const RepairUI = { solder: { active: false, progress: 0, bonus: 0, raf: null } };
 
-// Показываем ВСЕ купленные запчасти
 function renderPartsTray(partIds, container) {
   const allOwnedParts = Object.keys(G.ownedParts).filter(id => G.ownedParts[id] > 0);
   
@@ -13,7 +12,7 @@ function renderPartsTray(partIds, container) {
     const p = PARTS[id];
     if (!p) return "";
     const count = G.ownedParts[id];
-    return `<div class="part-chip" draggable="true" data-part="${p.id}" data-type="${p.type}">
+    return `<div class="part-chip" draggable="true" data-part="${p.id}" data-key="${p.key}" data-type="${p.type}">
       ${p.svg} ${p.name} (${count})
     </div>`;
   }).join("");
@@ -81,7 +80,10 @@ function renderDeviceMechanics(r) {
   partsLayer.innerHTML = ""; 
   tutorial.classList.add("hidden");
 
+  // Ищем поломку батареи по ключу
   const batteryFault = r.faults.find(f => PARTS[f.id]?.key === "battery");
+  
+  // Если батарея не сломана, крышку трогать не нужно
   if (!batteryFault) return; 
 
   if (!r.backCoverRemoved) {

@@ -130,7 +130,6 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   transition: all 0.2s; backdrop-filter: blur(10px);
 }
 .lot-card:active { transform: scale(0.98); }
-.lot-card.locked { opacity: 0.5; filter: grayscale(1); }
 .lot-icon {
   width: 60px; height: 60px; flex-shrink: 0;
   background: rgba(0,0,0,0.5); border-radius: 14px;
@@ -166,11 +165,6 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255,255,255,0.15);
   box-shadow: 0 8px 24px rgba(123, 31, 162, 0.4);
-  animation: pulse 3s infinite ease-in-out;
-}
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 8px 24px rgba(123, 31, 162, 0.4); }
-  50% { box-shadow: 0 8px 32px rgba(123, 31, 162, 0.7); }
 }
 .lot-of-day::before {
   content: "🔥 ЛОТ ДНЯ"; display: block;
@@ -253,20 +247,4 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 
 /* ============ ПРОФИЛЬ ============ */
 .profile-card { padding: 32px 24px; text-align: center; margin-bottom: 16px; }
-.avatar { font-size: 72px; margin-bottom: 8px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5)); }
-.profile-card h2 { margin: 0 0 8px 0; font-size: 22px; }
-.stars { font-size: 26px; color: var(--gold); letter-spacing: 6px; margin-bottom: 8px; text-shadow: 0 0 15px rgba(251, 191, 36, 0.5); }
-.muted { color: var(--muted); font-size: 13px; }
-
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.stat { padding: 16px; border-radius: var(--radius-sm); }
-.stat-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-.stat-value { font-size: 22px; font-weight: 900; color: var(--accent); margin-top: 4px; text-shadow: 0 0 10px rgba(34, 197, 94, 0.3); }
-
-/* ============ БИЗНЕС ============ */
-.business-list { display: flex; flex-direction: column; gap: 12px; }
-.business-card { padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.business-info h3 { margin: 0 0 4px 0; font-size: 15px; font-weight: 800; }
-.business-info p { margin: 0; font-size: 12px; color: var(--muted); }
-
-.hidden { display: none !important; }olor: var(--muted); font-size: 13px; }
+.avatar { font-size: 72px; margin-bottom

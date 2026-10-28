@@ -1,4 +1,3 @@
-// ИКОНКИ ЗАПЧАСТЕЙ
 const SVG_PARTS = {
   screen: `<svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 21h8"/></svg>`,
   battery: `<svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/><path d="M6 10l3 2-3 2"/></svg>`,
@@ -12,22 +11,18 @@ const SVG_PARTS = {
   monitor: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`
 };
 
-// ИКОНКИ УСТРОЙСТВ
 const SVG_DEVICES = {
   phone: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="3"/><circle cx="12" cy="18" r="1" fill="#fff"/><rect x="7" y="4" width="10" height="12" rx="1"/></svg>`,
-  pc: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`,
-  laptop: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="4" y="4" width="16" height="10" rx="2"/><path d="M2 18h20M6 18l-2 3h16l-2-3"/></svg>`
+  pc: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`
 };
 
 const PARTS = {};
 const PART_TYPES = [
-  // Телефоны
   { key: "screen", name: "Экран", svg: SVG_PARTS.screen, basePrice: 2500, type: "phone" },
   { key: "battery", name: "Батарея", svg: SVG_PARTS.battery, basePrice: 1200, type: "phone" },
   { key: "charging", name: "Разъем зарядки", svg: SVG_PARTS.power, basePrice: 800, type: "phone" },
   { key: "backcover", name: "Задняя крышка", svg: SVG_PARTS.cooler, basePrice: 1000, type: "phone" },
   { key: "speaker", name: "Динамик", svg: SVG_PARTS.cooler, basePrice: 600, type: "phone" },
-  // ПК / Ноутбуки
   { key: "gpu", name: "Видеокарта", svg: SVG_PARTS.gpu, basePrice: 150000, type: "pc" },
   { key: "cpu", name: "Процессор", svg: SVG_PARTS.cpu, basePrice: 50000, type: "pc" },
   { key: "psu", name: "Блок питания", svg: SVG_PARTS.battery, basePrice: 15000, type: "pc" },
@@ -49,7 +44,7 @@ PART_TYPES.forEach(type => {
       svg: type.svg, 
       price: Math.round(type.basePrice * (i * 0.8)),
       type: type.type,
-      key: type.key
+      key: type.key // ВАЖНО: по этому ключу проверяем совместимость
     };
     partId++;
   }

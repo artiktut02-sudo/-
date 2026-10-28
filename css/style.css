@@ -114,4 +114,6 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 
 .business-list { display: flex; flex-direction: column; gap: 12px; }
 .business-card { padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.business-info h
+.business-info h3 { margin: 0 0 4px 0; font-size: 15px; font-weight: 800; }
+.business-info p { margin: 0; font-size: 12px; color: var(--muted); }
+.hidden { display: none !important; }

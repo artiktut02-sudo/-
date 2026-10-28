@@ -1,4 +1,4 @@
-const SAVE_KEY = "tehnobaraholka_save_v6";
+const SAVE_KEY = "tehnobaraholka_save_v7";
 function saveGame(state) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
 function loadGame() { try { const raw = localStorage.getItem(SAVE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
 function resetGame() { localStorage.removeItem(SAVE_KEY); }
@@ -13,7 +13,7 @@ function defaultState() {
     maxInventory: 50,
     ownedParts: {},
     soldLotIds: [], 
-    activeSale: null,
+    activeSale: null, // Тут будет храниться таймер, цена и флаг "сломан"
     isAdmin: false
   };
 }

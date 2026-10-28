@@ -65,4 +65,49 @@ function startSolderGame(zoneEl, progressEl, bonusEl, onFinish) {
   zoneEl.addEventListener("mouseup", stop);
   zoneEl.addEventListener("mouseleave", stop);
 }
-function resetSolderUI(progressEl, bonusEl) { progressEl.style.width = "0%";
+function resetSolderUI(progressEl, bonusEl) { progressEl.style.width = "0%"; bonusEl.textContent = "0"; }
+
+// ✅ ИСПРАВЛЕННАЯ МЕХАНИКА РАЗБОРКИ (Кнопки теперь кликаются)
+function renderDeviceMechanics(r) {
+  const partsLayer = document.getElementById("device-parts-layer");
+  partsLayer.innerHTML = ""; 
+
+  const batteryFault = r.faults.find(f => f.id === "battery");
+  if (!batteryFault) return;
+
+  // Если крышка не снята
+  if (!r.backCoverRemoved) {
+    partsLayer.innerHTML = `<div class="interactive-btn" onclick="window.toggleCover(true)"><span>🔩 Снять крышку</span></div>`;
+    return;
+  }
+
+  // Если снята, но батарея внутри
+  if (!r.batteryRemoved) {
+    partsLayer.innerHTML = `<div class="interactive-battery" onclick="window.removeBattery()"><span style="color:#ff6b6b; font-weight:900;">🔋 Извлечь</span></div>`;
+    return;
+  }
+
+  // Если батарея извлечена, но не поставлена новая
+  if (!batteryFault.done) {
+    partsLayer.innerHTML = `<div style="position:absolute; top:140px; left:30px; width:120px; height:80px; border:2px dashed #555; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">Сюда батарею</div>`;
+    return;
+  }
+
+  // Если батарея поставлена, но крышка не закрыта
+  if (batteryFault.done && !r.backCoverClosed) {
+    partsLayer.innerHTML = `<div class="interactive-btn" onclick="window.toggleCover(false)"><span>✅ Закрыть крышку</span></div>`;
+  }
+}
+
+// Вызовы из HTML
+window.toggleCover = function(isRemoving) {
+  if (!G.activeRepair) return;
+  if (isRemoving) G.activeRepair.backCoverRemoved = true;
+  else G.activeRepair.backCoverClosed = true;
+  saveGame(G); renderWorkshop();
+};
+window.removeBattery = function() {
+  if (!G.activeRepair) return;
+  G.activeRepair.batteryRemoved = true;
+  saveGame(G); renderWorkshop();
+};

@@ -15,11 +15,11 @@ const els = {
 
 let activeDetailLotId = null;
 let currentMarketFilter = "all";
-let currentPartsFilter = "phone";
+let currentPartsFilter = "all"; // По умолчанию "Все"
 let marketSearchText = "";
 let partsSearchText = "";
-let marketLimit = 20; // Сколько лотов показывать
-let partsLimit = 20;  // Сколько запчастей показывать
+let marketLimit = 20;
+let partsLimit = 20;
 
 function fmt(n) { return Math.round(n).toLocaleString("ru-RU"); }
 function updateMoneyUI() { Object.values(els.money).forEach(el => { if (el) el.textContent = fmt(G.money); }); }
@@ -58,7 +58,13 @@ setInterval(() => {
 function showScreen(id) {
   els.screens.forEach(s => s.classList.toggle("active", s.id === "screen-" + id));
   if (id === "market") renderMarket();
-  if (id === "parts-market") renderPartsMarket();
+  if (id === "parts-market") {
+    currentPartsFilter = "all";
+    partsLimit = 20;
+    document.querySelectorAll("#screen-parts-market .filter-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("f-btn-all")?.classList.add("active");
+    renderPartsMarket();
+  }
   if (id === "workshop") renderWorkshop();
   if (id === "profile") renderProfile();
   if (id === "business") renderBusiness();
@@ -260,7 +266,6 @@ function renderWorkshop() {
   const r = G.activeRepair;
   const dev = DEVICES[r.device];
 
-  // МЕНЯЕМ SVG-КАРТИНКУ В ЗАВИСИМОСТИ ОТ ТИПА УСТРОЙСТВА
   const svgScreen = document.getElementById("svg-screen");
   const svgDefs = document.querySelector("#device-svg defs");
   
@@ -282,13 +287,18 @@ function renderWorkshop() {
     const p = PARTS[f.id]; return `<div class="fault-chip ${f.done ? "fixed" : ""}">${p.name}${f.done ? " ✓" : ""}</div>`;
   }).join("");
 
-  renderPartsTray(r.faults.filter(f => !f.done).map(f => f.id), els.partsTray);
+  renderPartsTray(null, els.partsTray);
 
   const deviceDropZone = document.getElementById("device-wrapper-click");
   if (deviceDropZone) {
     bindDragDrop(els.partsTray, deviceDropZone, partId => {
       const fault = r.faults.find(f => f.id === partId && !f.done);
-      if (!fault) return;
+      
+      if (PARTS[partId].type !== dev.type) {
+         return alert("❌ Эта запчасть не подходит к этому устройству!");
+      }
+
+      if (!fault) return alert("Эта запчасть здесь не нужна!");
       
       const isBattery = PARTS[partId]?.key === "battery";
       if (isBattery && !r.backCoverRemoved) return alert("Сначала снимите крышку!");

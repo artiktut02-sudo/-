@@ -3,7 +3,11 @@ const $ = sel => document.querySelector(sel);
 const $$ = sel => document.querySelectorAll(sel);
 
 const els = {
-  screens: $$(".screen"), money: { desktop: $("#money-desktop"), market: $("#money-market"), workshop: $("#money-workshop"), profile: $("#money-profile"), business: $("#money-business"), inventory: $("#money-inventory"), parts: $("#money-parts") },
+  screens: $$(".screen"), 
+  money: { 
+    desktop: $("#money-desktop"), market: $("#money-market"), workshop: $("#money-workshop"), 
+    profile: $("#money-profile"), business: $("#money-business"), inventory: $("#money-inventory"), parts: $("#money-parts") 
+  },
   marketList: $("#market-list"), partsMarketList: $("#parts-market-list"), lotOfDay: $("#lot-of-day"),
   workshopEmpty: $("#workshop-empty"), workshopActive: $("#workshop-active"),
   faultsList: $("#faults-list"), partsTray: $("#parts-tray"), solderPanel: $("#solder-panel"), solderProgress: $("#solder-progress"), solderBonus: $("#solder-bonus"),
@@ -15,18 +19,17 @@ const els = {
 function fmt(n) { return Math.round(n).toLocaleString("ru-RU"); }
 function updateMoneyUI() { Object.values(els.money).forEach(el => { if (el) el.textContent = fmt(G.money); }); }
 
-// Обновление счетчика склада
 function updateInventoryUI() {
-  els.invCount.textContent = `${G.inventory.length}/50`;
+  if (els.invCount) els.invCount.textContent = `${G.inventory.length}/50`;
 }
 
-// Проверка таймера продажи
 function checkSaleStatus() {
   if (G.activeSale) {
     if (Date.now() >= G.activeSale.endTime) {
       G.money += G.activeSale.price;
       G.stats.sales += 1; G.stats.repairs += 1;
-      if (G.activeSale.profit >= 0) { G.stats.earned += G.activeSale.profit; G.reputation += 1; } else { G.stats.losses += 1; }
+      if (G.activeSale.profit >= 0) { G.stats.earned += G.activeSale.profit; G.reputation += 1; } 
+      else { G.stats.losses += 1; }
       G.soldLotIds.push(G.activeSale.lotId);
       G.activeSale = null;
       saveGame(G); updateMoneyUI();
@@ -45,6 +48,9 @@ function showScreen(id) {
   if (id === "profile") renderProfile();
   if (id === "business") renderBusiness();
   if (id === "inventory") renderInventory();
+  // Прокрутка наверх при смене экрана
+  const activeScreen = document.getElementById("screen-" + id);
+  if (activeScreen) activeScreen.scrollTop = 0;
 }
 
 function todayKey() { return new Date().toISOString().slice(0, 10); }
@@ -72,7 +78,6 @@ function renderLotOfDay() {
   els.lotOfDay.querySelector("[data-buy-lot]").addEventListener("click", e => buyLot(e.target.dataset.buyLot, true));
 }
 
-// Рынок устройств (покупка на склад)
 function renderMarket() {
   renderLotOfDay();
   els.marketList.innerHTML = LOTS.map(lot => {
@@ -93,7 +98,6 @@ function renderMarket() {
   els.marketList.querySelectorAll("[data-buy-lot]").forEach(btn => btn.addEventListener("click", e => buyLot(e.target.dataset.buyLot, false)));
 }
 
-// Покупка устройства на Склад
 function buyLot(lotId, withDiscount) {
   const lot = LOTS.find(l => l.id === lotId);
   if (!lot) return;
@@ -104,7 +108,6 @@ function buyLot(lotId, withDiscount) {
   if (G.money < price) return alert("Не хватает денег!");
   
   G.money -= price;
-  // Добавляем на склад СРАЗУ (сломанным)
   G.inventory.push({
     lotId: lot.id, device: lot.device, buyPrice: price, faults: lot.faults.map(f => ({ id: f, done: false })),
     bonus: 0, solderDone: false, repairId: Date.now()
@@ -114,7 +117,6 @@ function buyLot(lotId, withDiscount) {
   alert("📦 Устройство куплено и отправлено на склад!");
 }
 
-// Рынок запчастей
 function renderPartsMarket() {
   els.partsMarketList.innerHTML = Object.values(PARTS).map(p => {
     const price = partPriceWithDiscount(p.id, G.reputation);
@@ -139,11 +141,10 @@ window.buyPart = function(partId, price) {
   saveGame(G); updateMoneyUI(); renderPartsMarket();
 };
 
-// Склад устройств
 function renderInventory() {
   updateInventoryUI();
   if (G.inventory.length === 0) {
-    els.inventoryList.innerHTML = `<div class="empty-state glass"><p>Склад пуст. Купи устройства на барахолке.</p></div>`;
+    els.inventoryList.innerHTML = `<div class="empty-state glass"><div class="empty-icon">📦</div><h3>Склад пуст</h3><p>Купи устройства на барахолке.</p></div>`;
     return;
   }
   els.inventoryList.innerHTML = G.inventory.map(item => {
@@ -170,23 +171,26 @@ function renderInventory() {
   }).join("");
 }
 
-// Начать ремонт со склада
 window.startRepair = function(repairId) {
   const idx = G.inventory.findIndex(i => i.repairId === repairId);
   if (idx === -1) return;
   const item = G.inventory[idx];
   
-  // Переносим со склада в активный ремонт
   G.activeRepair = { ...item, backCoverRemoved: false, batteryRemoved: false, backCoverClosed: false };
   G.inventory.splice(idx, 1); // Убираем со склада пока чиним
   
   saveGame(G); updateMoneyUI(); updateInventoryUI(); showScreen("workshop");
 };
 
-// Мастерская
 function renderWorkshop() {
-  if (!G.activeRepair) { els.workshopEmpty.classList.remove("hidden"); els.workshopActive.classList.add("hidden"); return; }
-  els.workshopEmpty.classList.add("hidden"); els.workshopActive.classList.remove("hidden");
+  if (!G.activeRepair) { 
+    if (els.workshopEmpty) els.workshopEmpty.classList.remove("hidden"); 
+    if (els.workshopActive) els.workshopActive.classList.add("hidden"); 
+    return; 
+  }
+  if (els.workshopEmpty) els.workshopEmpty.classList.add("hidden"); 
+  if (els.workshopActive) els.workshopActive.classList.remove("hidden");
+  
   const r = G.activeRepair;
 
   els.faultsList.innerHTML = r.faults.map(f => {
@@ -201,7 +205,7 @@ function renderWorkshop() {
       const fault = r.faults.find(f => f.id === partId && !f.done);
       if (!fault) return;
       if (partId === "battery" && !r.backCoverRemoved) return alert("Сначала снимите крышку!");
-      if (G.ownedParts[partId] <= 0) return alert("У тебя нет этой запчасти!");
+      if ((G.ownedParts[partId] || 0) <= 0) return alert("У тебя нет этой запчасти!");
       
       fault.done = true;
       G.ownedParts[partId] -= 1; // Тратим запчасть
@@ -234,13 +238,11 @@ function finishRepair() {
   if (!r) return;
   if (!r.faults.every(f => f.done) || !r.backCoverClosed) return;
   
-  // Возвращаем на склад (уже починенным)
   G.inventory.push(r);
   G.activeRepair = null;
   saveGame(G); updateInventoryUI(); showScreen("inventory");
 }
 
-// Выставить со склада
 window.listOnMarket = function(repairId) {
   const idx = G.inventory.findIndex(i => i.repairId === repairId);
   if (idx === -1) return;
@@ -291,14 +293,27 @@ window.buyUpgrade = function(id, price) {
 
 function init() {
   updateMoneyUI(); updateInventoryUI();
-  $$("[data-screen]").forEach(btn => btn.addEventListener("click", e => { e.preventDefault(); showScreen(btn.dataset.screen); }));
-  $$("[data-back]").forEach(btn => btn.addEventListener("click", e => { e.preventDefault(); showScreen("desktop"); }));
-  if (els.btnFinishRepair) els.btnFinishRepair.addEventListener("click", finishRepair);
-  if (els.btnReset) els.btnReset.addEventListener("click", () => {
-    if (confirm("Вы уверены, что хотите сбросить ВЕСЬ прогресс?")) {
-      resetGame(); G = defaultState(); saveGame(G); updateMoneyUI(); updateInventoryUI(); showScreen("desktop");
-    }
+  
+  // Обработчики кнопок навигации
+  $$("[data-screen]").forEach(btn => {
+    btn.addEventListener("click", e => { e.preventDefault(); showScreen(btn.dataset.screen); });
   });
+  
+  // Обработчики кнопок "Назад" (крестики)
+  $$("[data-back]").forEach(btn => {
+    btn.addEventListener("click", e => { e.preventDefault(); showScreen("desktop"); });
+  });
+  
+  if (els.btnFinishRepair) els.btnFinishRepair.addEventListener("click", finishRepair);
+  
+  if (els.btnReset) {
+    els.btnReset.addEventListener("click", () => {
+      if (confirm("Вы уверены, что хотите сбросить ВЕСЬ прогресс?")) {
+        resetGame(); G = defaultState(); saveGame(G); updateMoneyUI(); updateInventoryUI(); showScreen("desktop");
+      }
+    });
+  }
+  
   setInterval(() => saveGame(G), 15000);
   showScreen("desktop");
 }

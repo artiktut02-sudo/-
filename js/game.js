@@ -48,7 +48,6 @@ function showScreen(id) {
   if (id === "profile") renderProfile();
   if (id === "business") renderBusiness();
   if (id === "inventory") renderInventory();
-  // Прокрутка наверх при смене экрана
   const activeScreen = document.getElementById("screen-" + id);
   if (activeScreen) activeScreen.scrollTop = 0;
 }
@@ -177,7 +176,7 @@ window.startRepair = function(repairId) {
   const item = G.inventory[idx];
   
   G.activeRepair = { ...item, backCoverRemoved: false, batteryRemoved: false, backCoverClosed: false };
-  G.inventory.splice(idx, 1); // Убираем со склада пока чиним
+  G.inventory.splice(idx, 1);
   
   saveGame(G); updateMoneyUI(); updateInventoryUI(); showScreen("workshop");
 };
@@ -205,11 +204,19 @@ function renderWorkshop() {
       const fault = r.faults.find(f => f.id === partId && !f.done);
       if (!fault) return;
       if (partId === "battery" && !r.backCoverRemoved) return alert("Сначала снимите крышку!");
-      if ((G.ownedParts[partId] || 0) <= 0) return alert("У тебя нет этой запчасти!");
+      if ((G.ownedParts[partId] || 0) <= 0) return alert("У тебя нет этой запчасти! Купи её в магазине запчастей.");
       
+      // ПРОВЕРКА: если ставим батарею, её надо ставить ТОЛЬКО после извлечения старой!
+      if (partId === "battery" && !r.batteryRemoved) {
+        return alert("Сначала вытащите старую батарею! Нажмите на неё.");
+      }
+
       fault.done = true;
       G.ownedParts[partId] -= 1; // Тратим запчасть
-      if (partId === "battery") r.backCoverClosed = false;
+      if (partId === "battery") {
+        r.backCoverClosed = false;
+        r.batteryRemoved = true;
+      }
       
       saveGame(G); renderWorkshop();
     });
@@ -252,7 +259,7 @@ window.listOnMarket = function(repairId) {
   const spentOnParts = item.faults.reduce((sum, f) => sum + partPriceWithDiscount(f.id, G.reputation), 0);
   const profit = sellPrice - item.buyPrice - spentOnParts;
 
-  const waitTime = 15000; // 15 сек
+  const waitTime = 15000; 
   G.activeSale = { lotId: item.lotId, price: sellPrice, profit: profit, endTime: Date.now() + waitTime };
   G.inventory.splice(idx, 1);
   
@@ -294,12 +301,10 @@ window.buyUpgrade = function(id, price) {
 function init() {
   updateMoneyUI(); updateInventoryUI();
   
-  // Обработчики кнопок навигации
   $$("[data-screen]").forEach(btn => {
     btn.addEventListener("click", e => { e.preventDefault(); showScreen(btn.dataset.screen); });
   });
   
-  // Обработчики кнопок "Назад" (крестики)
   $$("[data-back]").forEach(btn => {
     btn.addEventListener("click", e => { e.preventDefault(); showScreen("desktop"); });
   });

@@ -14,6 +14,8 @@ const els = {
 };
 
 let activeDetailLotId = null;
+let currentMarketFilter = "all";
+let currentPartsFilter = "phone";
 
 function fmt(n) { return Math.round(n).toLocaleString("ru-RU"); }
 function updateMoneyUI() { Object.values(els.money).forEach(el => { if (el) el.textContent = fmt(G.money); }); }
@@ -61,8 +63,29 @@ function showScreen(id) {
   if (activeScreen) activeScreen.scrollTop = 0;
 }
 
+window.filterMarket = function(type) {
+  currentMarketFilter = type;
+  document.querySelectorAll("#screen-market .filter-btn").forEach(b => b.classList.remove("active"));
+  if(type === 'all') document.getElementById("fm-btn-all")?.classList.add("active");
+  if(type === 'phone') document.getElementById("fm-btn-phone")?.classList.add("active");
+  if(type === 'pc') document.getElementById("fm-btn-pc")?.classList.add("active");
+  renderMarket();
+};
+
+window.filterParts = function(type) {
+  currentPartsFilter = type;
+  document.querySelectorAll("#screen-parts-market .filter-btn").forEach(b => b.classList.remove("active"));
+  if(type === 'all') document.getElementById("f-btn-all")?.classList.add("active");
+  if(type === 'phone') document.getElementById("f-btn-phone")?.classList.add("active");
+  if(type === 'pc') document.getElementById("f-btn-pc")?.classList.add("active");
+  renderPartsMarket();
+};
+
 function renderMarket() {
-  const visibleLots = LOTS.filter(l => l.reqRep <= G.reputation).slice(0, 20);
+  let visibleLots = LOTS.filter(l => l.reqRep <= G.reputation);
+  if (currentMarketFilter !== "all") visibleLots = visibleLots.filter(l => DEVICES[l.device].type === currentMarketFilter);
+  visibleLots = visibleLots.slice(0, 20);
+
   els.marketList.innerHTML = visibleLots.map(lot => {
     const dev = DEVICES[lot.device];
     const profit = lotProfit(lot);
@@ -76,7 +99,7 @@ function renderMarket() {
         </div>
         <div style="color: var(--muted); font-size: 24px;">›</div>
       </div>`;
-  }).join("");
+  }).join("") || `<div class="empty-state glass"><p>В этой категории пока нет лотов.</p></div>`;
 }
 
 window.openDeviceDetail = function(lotId) {
@@ -118,7 +141,10 @@ function buyLot(lotId, withDiscount) {
 }
 
 function renderPartsMarket() {
-  els.partsMarketList.innerHTML = Object.keys(PARTS).slice(0, 50).map(id => {
+  let visibleParts = Object.keys(PARTS);
+  if (currentPartsFilter !== "all") visibleParts = visibleParts.filter(id => PARTS[id].type === currentPartsFilter);
+
+  els.partsMarketList.innerHTML = visibleParts.map(id => {
     const p = PARTS[id];
     const price = partPriceWithDiscount(id, G.reputation);
     const count = G.ownedParts[id] || 0;
@@ -183,6 +209,26 @@ function renderWorkshop() {
   if (!G.activeRepair) { els.workshopEmpty.classList.remove("hidden"); els.workshopActive.classList.add("hidden"); return; }
   els.workshopEmpty.classList.add("hidden"); els.workshopActive.classList.remove("hidden");
   const r = G.activeRepair;
+  const dev = DEVICES[r.device];
+
+  // МЕНЯЕМ SVG-КАРТИНКУ В ЗАВИСИМОСТИ ОТ ТИПА УСТРОЙСТВА
+  const svgScreen = document.getElementById("svg-screen");
+  const svgDefs = document.querySelector("#device-svg defs");
+  
+  if (dev.type === "pc") {
+    // Для ПК рисуем другой корпус
+    svgScreen.setAttribute("x", "20"); svgScreen.setAttribute("y", "40"); svgScreen.setAttribute("width", "160"); svgScreen.setAttribute("height", "120");
+    document.querySelector("#device-svg rect[stroke='#444']").setAttribute("height", "260");
+    if (svgDefs) {
+       svgDefs.innerHTML = `<linearGradient id="pcbGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1d24"/><stop offset="1" stop-color="#0a0a0a"/></linearGradient>`;
+    }
+  } else {
+    svgScreen.setAttribute("x", "20"); svgScreen.setAttribute("y", "40"); svgScreen.setAttribute("width", "160"); svgScreen.setAttribute("height", "320");
+    document.querySelector("#device-svg rect[stroke='#444']").setAttribute("height", "380");
+    if (svgDefs) {
+       svgDefs.innerHTML = `<linearGradient id="pcbGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a2a12"/><stop offset="1" stop-color="#114b22"/></linearGradient>`;
+    }
+  }
 
   els.faultsList.innerHTML = r.faults.map(f => {
     const p = PARTS[f.id]; return `<div class="fault-chip ${f.done ? "fixed" : ""}">${p.name}${f.done ? " ✓" : ""}</div>`;
@@ -195,180 +241,9 @@ function renderWorkshop() {
     bindDragDrop(els.partsTray, deviceDropZone, partId => {
       const fault = r.faults.find(f => f.id === partId && !f.done);
       if (!fault) return;
-      const isBattery = PARTS[partId]?.name.includes("Батарея");
+      
+      const isBattery = PARTS[partId]?.key === "battery";
       if (isBattery && !r.backCoverRemoved) return alert("Сначала снимите крышку!");
       if ((G.ownedParts[partId] || 0) <= 0) return alert("У тебя нет этой запчасти!");
       if (isBattery && !r.batteryRemoved) return alert("Сначала вытащите старую батарею!");
       
-      fault.done = true;
-      G.ownedParts[partId] -= 1; 
-      if (isBattery) { r.backCoverClosed = false; r.batteryRemoved = true; }
-      saveGame(G); renderWorkshop();
-    });
-  }
-
-  renderDeviceMechanics(r);
-
-  const allFixed = r.faults.every(f => f.done);
-  if (allFixed && !r.solderDone) {
-    els.solderPanel.classList.remove("hidden"); resetSolderUI(els.solderProgress, els.solderBonus);
-    const zone = $("#solder-zone"); const fresh = zone.cloneNode(true); zone.parentNode.replaceChild(fresh, zone);
-    startSolderGame(fresh, els.solderProgress, els.solderBonus, bonus => {
-      r.bonus = bonus; r.solderDone = true; saveGame(G); renderWorkshop();
-    });
-  } else if (allFixed && r.solderDone) {
-    els.solderPanel.classList.remove("hidden"); els.solderProgress.style.width = "100%"; els.solderBonus.textContent = r.bonus;
-  } else { els.solderPanel.classList.add("hidden"); }
-
-  const canFinish = allFixed && r.backCoverClosed;
-  els.btnFinishRepair.disabled = !canFinish;
-  els.btnFinishRepair.textContent = canFinish ? "Отправить на склад" : (allFixed && !r.backCoverClosed ? "Закройте крышку!" : "Завершить ремонт");
-
-  // Быстрый ремонт для админа
-  if (G.isAdmin) {
-    let fastBtn = document.getElementById("btn-fast-repair");
-    if (!fastBtn) {
-      fastBtn = document.createElement("button");
-      fastBtn.id = "btn-fast-repair";
-      fastBtn.className = "btn-primary";
-      fastBtn.style.cssText = "width: 100%; margin-top: 10px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);";
-      fastBtn.textContent = "⚡ Мгновенный ремонт (Админ)";
-      fastBtn.onclick = () => {
-        r.faults.forEach(f => f.done = true);
-        r.backCoverClosed = true; r.solderDone = true;
-        saveGame(G); renderWorkshop();
-        alert("✅ Устройство мгновенно починено!");
-      };
-      els.btnFinishRepair.parentNode.appendChild(fastBtn);
-    }
-    fastBtn.style.display = "block";
-  } else {
-    const fastBtn = document.getElementById("btn-fast-repair");
-    if (fastBtn) fastBtn.style.display = "none";
-  }
-}
-
-function finishRepair() {
-  const r = G.activeRepair;
-  if (!r) return;
-  if (!r.faults.every(f => f.done) || !r.backCoverClosed) return;
-  G.inventory.push(r);
-  G.activeRepair = null;
-  saveGame(G); updateInventoryUI(); showScreen("inventory");
-}
-
-window.listOnMarket = function(repairId) {
-  const idx = G.inventory.findIndex(i => i.repairId === repairId);
-  if (idx === -1) return;
-  const item = G.inventory[idx];
-  const lot = LOTS.find(l => l.id === item.lotId);
-  const sellPrice = lot ? Math.round(lot.sell * (1 + ((item.bonus + (G.upgrades.fastSale ? 20 : 0))/100))) : item.buyPrice * 2;
-  
-  G.activeSale = { lotId: item.lotId, price: sellPrice, profit: sellPrice - item.buyPrice, endTime: Date.now() + 15000 };
-  G.inventory.splice(idx, 1);
-  saveGame(G); updateInventoryUI(); renderInventory();
-  alert("📈 Выставлено на продажу! Ждем покупателя (15 сек).");
-};
-
-function renderProfile() {
-  const stars = starsFromRep(G.reputation);
-  els.stars.textContent = "★".repeat(stars) + "☆".repeat(5 - stars);
-  els.repValue.textContent = G.reputation;
-  els.statRepairs.textContent = G.stats.repairs;
-  els.statEarned.textContent = fmt(G.stats.earned) + " ₽";
-  els.statSales.textContent = G.stats.sales;
-  els.statLosses.textContent = G.stats.losses;
-}
-
-function renderBusiness() {
-  els.businessList.innerHTML = UPGRADES.map(upg => {
-    const isBought = G.upgrades[upg.id];
-    const locked = G.reputation < upg.reqRep;
-    const price = isBought ? "Куплено" : fmt(upg.basePrice) + " ₽";
-    return `
-      <div class="business-card glass ${locked ? "locked" : ""}">
-        <div class="business-info"><h3>${upg.name}</h3><p>${upg.desc}</p></div>
-        <button class="btn-primary" ${isBought || locked ? "disabled" : ""} onclick="buyUpgrade('${upg.id}', ${upg.basePrice})">${price}</button>
-      </div>`;
-  }).join("");
-}
-
-window.buyUpgrade = function(id, price) {
-  if (G.money < price) return alert("Не хватает денег!");
-  G.money -= price;
-  G.upgrades[id] = true;
-  if (id === "solderPro") G.upgrades.solderBonus = 15;
-  if (id === "office") G.maxInventory = 100;
-  saveGame(G); updateMoneyUI(); renderBusiness();
-};
-
-// АДМИНКА
-window.tryLogin = function() {
-  const user = document.getElementById("admin-login").value;
-  const pass = document.getElementById("admin-password").value;
-  if (user.toLowerCase() === "enjota" && pass === "admin") {
-    G.isAdmin = true;
-    saveGame(G);
-    alert("✅ Добро пожаловать, Админ!");
-    showScreen("desktop");
-    if (!document.getElementById("admin-panel")) {
-      const panel = document.createElement("div");
-      panel.id = "admin-panel";
-      panel.style.cssText = "position:fixed; bottom:20px; right:20px; background:#000; border:2px solid #fbbf24; padding:10px; border-radius:10px; z-index:9999; color:#fff; font-size:12px; box-shadow: 0 0 20px rgba(0,0,0,0.8); display:flex; flex-direction:column; gap:5px;";
-      panel.innerHTML = `
-        <div style="font-weight:bold; color:#fbbf24; text-align:center; margin-bottom:5px;">👑 АДМИН-ПАНЕЛЬ</div>
-        <button onclick="window.addMoney(1000000)" style="background:#22c55e; color:#fff; padding:8px; border-radius:5px; border:none; cursor:pointer;">+1 000 000 ₽</button>
-        <button onclick="window.addRep(10)" style="background:#8b5cf6; color:#fff; padding:8px; border-radius:5px; border:none; cursor:pointer;">+10 Репутации</button>
-        <button onclick="window.openAdminAddMenu()" style="background:#f59e0b; color:#fff; padding:8px; border-radius:5px; border:none; cursor:pointer;">➕ Добавить устройство</button>
-        <button onclick="window.adminRefreshMarket()" style="background:#3b82f6; color:#fff; padding:8px; border-radius:5px; border:none; cursor:pointer;">🔄 Обновить рынок</button>
-      `;
-      document.body.appendChild(panel);
-    }
-  } else {
-    alert("❌ Неверный логин или пароль");
-  }
-};
-
-window.openAdminAddMenu = function() {
-  if (!G.isAdmin) return alert("Только для админа!");
-  const devKeys = Object.keys(DEVICES);
-  const randomDevKey = devKeys[Math.floor(Math.random() * devKeys.length)];
-  const dev = DEVICES[randomDevKey];
-  const choice = prompt(`Добавить "${dev.name}"? \n1 - на Склад, \n2 - на Рынок, \n3 - Отмена`);
-  if (choice === "1") {
-    G.inventory.push({ lotId: `admin_${Date.now()}`, device: randomDevKey, buyPrice: 0, faults: [], bonus: 100, solderDone: true, repairId: Date.now(), backCoverClosed: true });
-    saveGame(G); updateInventoryUI();
-    alert("✅ Добавлено на склад!");
-  } else if (choice === "2") {
-    LOTS.unshift({ id: `admin_lot_${Date.now()}`, device: randomDevKey, buy: Math.round(dev.basePrice * 0.3), sell: dev.basePrice, faults: ["p_0", "p_1"], reqRep: 0 });
-    saveGame(G); alert("✅ Добавлено на рынок!"); renderMarket();
-  }
-};
-
-window.adminRefreshMarket = function() {
-  if (!G.isAdmin) return alert("Только для админа!");
-  generateLots();
-  alert("🔄 Рынок обновлен!");
-  renderMarket();
-};
-
-window.addMoney = function(amount) { G.money += amount; saveGame(G); updateMoneyUI(); };
-window.addRep = function(amount) { G.reputation += amount; saveGame(G); renderProfile(); };
-
-function init() {
-  updateMoneyUI(); updateInventoryUI();
-  $$("[data-screen]").forEach(btn => { btn.addEventListener("click", e => { e.preventDefault(); showScreen(btn.dataset.screen); }); });
-  $$("[data-back]").forEach(btn => { btn.addEventListener("click", e => { e.preventDefault(); showScreen("desktop"); }); });
-  if (els.btnFinishRepair) els.btnFinishRepair.addEventListener("click", finishRepair);
-  if (els.btnReset) {
-    els.btnReset.addEventListener("click", () => {
-      if (confirm("Сбросить ВЕСЬ прогресс?")) {
-        resetGame(); G = defaultState(); saveGame(G); updateMoneyUI(); updateInventoryUI(); showScreen("desktop");
-      }
-    });
-  }
-  setInterval(() => saveGame(G), 15000);
-  showScreen("desktop");
-}
-
-document.addEventListener("DOMContentLoaded", init);

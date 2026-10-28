@@ -1,9 +1,9 @@
-name: Build APK
+name: Build Release APK
 
 on:
   push:
-    branches: [ main ] # Если у тебя ветка master, поменяй на master
-  workflow_dispatch: # Позволяет запускать сборку вручную
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -32,7 +32,6 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    # НОВЫЙ ШАГ: Копируем файлы игры в папку www
     - name: Prepare web assets
       run: |
         mkdir -p www
@@ -46,14 +45,16 @@ jobs:
     - name: Sync web assets
       run: npx cap sync
 
-    - name: Build APK (Debug)
+    # --- СБОРКА RELEASE БЕЗ ПОДПИСИ ---
+    - name: Build Release APK
       run: |
         cd android
         chmod +x gradlew
-        ./gradlew assembleDebug
+        # Собираем релиз, но без подписи (для установки вручную)
+        ./gradlew assembleRelease -x lintVitalRelease
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: Tehnobaraholka-APK
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+        name: Tehnobaraholka-Release
+        path: android/app/build/outputs/apk/release/app-release-unsigned.apk

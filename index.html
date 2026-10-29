@@ -6,43 +6,47 @@
   <meta name="theme-color" content="#0b0d11" />
   <title>ТехноБарахолка Pro</title>
   <link rel="stylesheet" href="css/style.css" />
-  <!-- Библиотека для создания QR-кодов (на всякий случай, оставим) -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
-<!-- ЗАСТАВКА (SPLASH SCREEN) -->
+<!-- ЗАСТАВКА -->
 <div id="splash-screen">
   <div class="splash-logo">
     <div class="splash-enjodev">ENJODEV</div>
-    <div class="splash-title">
-      Техн<span class="gear-icon">⚙️</span>Барахолка
-    </div>
+    <div class="splash-title">Техн<span class="gear-icon">⚙️</span>Барахолка</div>
   </div>
 </div>
 
 <div class="bg-layer"><div class="glow-orb orb-1"></div><div class="glow-orb orb-2"></div><div class="glow-orb orb-3"></div></div>
 
-<!-- ЭКРАН 0: АВТОРИЗАЦИЯ -->
+<!-- ЭКРАН: АВТОРИЗАЦИЯ (Вход и Регистрация) -->
 <section id="screen-login" class="screen">
   <div class="glass" style="padding: 32px; margin: auto; width: 90%; max-width: 400px; text-align: center;">
-    <h2>Авторизация</h2>
-    <p style="margin-bottom: 20px; font-size: 13px; color: var(--muted);">Вход для администратора</p>
-    <input type="text" id="admin-login" placeholder="Логин" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; outline:none;">
-    <input type="password" id="admin-password" placeholder="Пароль" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; outline:none;">
-    <button class="btn-primary" style="width: 100%;" onclick="window.tryLogin()">Войти</button>
-    <button class="btn-primary" style="width: 100%; margin-top: 10px; background: #444;" onclick="showScreen('desktop')">Отмена</button>
+    <h2 id="auth-title">Вход</h2>
+    <p style="margin-bottom: 20px; font-size: 13px; color: var(--muted);">Добро пожаловать в ТехноБарахолку</p>
+    
+    <input type="text" id="auth-login" placeholder="Логин" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; outline:none;">
+    <input type="password" id="auth-password" placeholder="Пароль" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; outline:none;">
+    
+    <button class="btn-primary" style="width: 100%;" onclick="window.doAuth()">Войти / Зарегистрироваться</button>
+    
+    <p style="margin-top: 16px; font-size: 12px; color: var(--muted);">
+      Нет аккаунта? Просто введи новый логин и пароль, и он создастся автоматически!
+    </p>
   </div>
 </section>
 
-<!-- ЭКРАН 1: РАБОЧИЙ СТОЛ -->
-<section id="screen-desktop" class="screen active">
+<!-- ЭКРАН: РАБОЧИЙ СТОЛ -->
+<section id="screen-desktop" class="screen">
   <header class="topbar glass">
     <div class="brand"><span class="brand-icon">⚡</span> Техн<span style="color: #a78bfa; font-size: 18px;">⚙️</span>Барахолка <span class="pro-badge">PRO</span></div>
-    <div class="wallet glass">💰 <span id="money-desktop">10000</span> ₽</div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <div class="wallet glass">💰 <span id="money-desktop">10000</span> ₽</div>
+      <button class="close-btn" onclick="window.logout()" title="Выйти">🚪</button>
+    </div>
   </header>
   <div class="desktop-hero">
-    <h1>Добро пожаловать, Мастер</h1>
+    <h1 id="welcome-text">Добро пожаловать!</h1>
     <p>Твой путь от новичка до владельца сети сервисов начинается здесь</p>
   </div>
   <div class="desktop-grid">
@@ -70,14 +74,43 @@
       <div class="icon-bg" style="background: linear-gradient(135deg, #fccb90, #d57eeb);">📈</div>
       <div class="icon-text"><span class="app-name">Бизнес</span><span class="app-desc">Улучшения</span></div>
     </button>
-    <button class="app-icon glass" data-screen="login">
+    <button class="app-icon glass" data-screen="leaderboard">
+      <div class="icon-bg" style="background: linear-gradient(135deg, #fbbf24, #d97706);">🏆</div>
+      <div class="icon-text"><span class="app-name">Лидеры</span><span class="app-desc">Топ игроков</span></div>
+    </button>
+    <!-- Кнопка админки (появляется, если игрок - админ) -->
+    <button class="app-icon glass hidden" id="admin-icon" data-screen="admin">
       <div class="icon-bg" style="background: linear-gradient(135deg, #333, #111);">👑</div>
-      <div class="icon-text"><span class="app-name">Админка</span><span class="app-desc">Вход для админа</span></div>
+      <div class="icon-text"><span class="app-name">Админка</span><span class="app-desc">Управление</span></div>
     </button>
   </div>
 </section>
 
-<!-- ЭКРАН 2: МАРКЕТПЛЕЙС УСТРОЙСТВ -->
+<!-- ЭКРАН: ЛИДЕРБОРД -->
+<section id="screen-leaderboard" class="screen">
+  <header class="topbar glass">
+    <div class="title-wrap"><h2>🏆 Лидерборд</h2><p>Лучшие продавцы</p></div>
+    <div class="top-actions"><button class="close-btn" data-back>✕</button></div>
+  </header>
+  <div id="leaderboard-list" class="market-list"></div>
+</section>
+
+<!-- ЭКРАН: АДМИНКА -->
+<section id="screen-admin" class="screen">
+  <header class="topbar glass">
+    <div class="title-wrap"><h2>👑 Панель Админа</h2><p>Спавн устройств</p></div>
+    <div class="top-actions"><button class="close-btn" data-back>✕</button></div>
+  </header>
+  <div style="padding: 16px; text-align: center; color: var(--muted);">
+    Выбери устройство для спавна на рынок:
+  </div>
+  <div class="filter-container" style="padding: 0 16px;">
+    <button class="filter-btn active" onclick="window.spawnDevice('phone')">📱 Телефоны</button>
+    <button class="filter-btn" onclick="window.spawnDevice('pc')">🖥 ПК</button>
+  </div>
+</section>
+
+<!-- ЭКРАН: МАРКЕТПЛЕЙС УСТРОЙСТВ -->
 <section id="screen-market" class="screen">
   <header class="topbar glass">
     <div class="title-wrap"><h2>🏪 Устройства</h2><p>Найди технику для ремонта</p></div>
@@ -92,12 +125,11 @@
     <button class="filter-btn" onclick="window.filterMarket('pc')" id="fm-btn-pc">🖥 Компьютеры</button>
   </div>
 
-  <div id="lot-of-day" class="lot-of-day hidden"></div>
   <div id="market-list" class="market-list"></div>
   <button id="load-more-market" class="btn-primary" style="margin-top: 16px; display: none;" onclick="window.loadMoreMarket()">Показать ещё</button>
 </section>
 
-<!-- ЭКРАН ДЕТАЛЕЙ (ОЗОН) -->
+<!-- ЭКРАН ДЕТАЛЕЙ -->
 <section id="screen-device-detail" class="screen">
   <header class="topbar glass"><button class="close-btn" data-back>✕</button><div class="title-wrap"><h2 id="detail-title">Устройство</h2><p>Описание и поломки</p></div></header>
   <div class="glass" style="padding: 20px; border-radius: 20px;">
@@ -116,26 +148,23 @@
   </div>
 </section>
 
-<!-- ЭКРАН 3: ЗАПЧАСТИ -->
+<!-- ЭКРАН: ЗАПЧАСТИ -->
 <section id="screen-parts-market" class="screen">
   <header class="topbar glass">
     <div class="title-wrap"><h2>⚙️ Запчасти</h2><p>Выбери категорию</p></div>
     <div class="top-actions"><div class="wallet glass">💰 <span id="money-parts">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
-  
   <input type="text" id="parts-search" placeholder="🔍 Поиск запчасти..." oninput="window.searchParts(this.value)" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #fff; outline: none; font-size: 14px;">
-
   <div class="filter-container">
     <button class="filter-btn active" onclick="window.filterParts('all')" id="f-btn-all">Все</button>
     <button class="filter-btn" onclick="window.filterParts('phone')" id="f-btn-phone">📱 Смартфоны</button>
     <button class="filter-btn" onclick="window.filterParts('pc')" id="f-btn-pc">🖥 ПК / Ноутбуки</button>
   </div>
-
   <div id="parts-market-list" class="market-list"></div>
   <button id="load-more-parts" class="btn-primary" style="margin-top: 16px; display: none;" onclick="window.loadMoreParts()">Показать ещё</button>
 </section>
 
-<!-- ЭКРАН 4: МАСТЕРСКАЯ -->
+<!-- ЭКРАН: МАСТЕРСКАЯ -->
 <section id="screen-workshop" class="screen">
   <header class="topbar glass">
     <div class="title-wrap"><h2>🔧 Мастерская</h2><p>Починим всё!</p></div>
@@ -147,49 +176,36 @@
   </div>
   <div id="workshop-active" class="workshop hidden">
     <div id="tutorial-hint" class="tutorial-hint glass">👆 Нажми на телефон</div>
-    
     <div class="repair-stage glass">
       <div class="device-wrapper" id="device-wrapper-click">
-        <!-- ФОН УСТРОЙСТВА (МЕНЯЕТСЯ В JS) -->
         <div id="device-texture" style="width: 100%; height: 100%; border-radius: 30px; overflow: hidden; border: 4px solid #444; position: relative;">
           <div id="device-screen" style="width: 100%; height: 80%; background: #111; border-radius: 20px 20px 0 0;"></div>
           <div id="device-back" style="width: 100%; height: 20%; background: #222;"></div>
         </div>
-        
-        <!-- СЛОЙ С БОЛТАМИ И КРЫШКОЙ (ДОБАВЛЯЕТСЯ ИЗ JS) -->
         <div id="device-parts-layer" class="device-parts-layer" style="position: absolute; inset: 0;"></div>
       </div>
       <div id="faults-list" class="faults-list"></div>
     </div>
-
-    <!-- Инструменты -->
-    <div class="tools-tray" id="tools-tray">
-      <!-- Отвертка (появится, если нужно открутить болты) -->
+    <div class="tools-tray hidden" id="tools-tray">
       <div class="tool-item" id="tool-screwdriver" onclick="window.pickTool('screwdriver')">
-        <div class="tool-icon">🪛</div>
-        <div class="tool-name">Отвёртка</div>
+        <div class="tool-icon">🪛</div><div class="tool-name">Отвёртка</div>
       </div>
-      <!-- Оранжевая присоска (появится для снятия крышки) -->
       <div class="tool-item" id="tool-suction" onclick="window.pickTool('suction')">
-        <div class="tool-icon">🟠</div>
-        <div class="tool-name">Присоска</div>
+        <div class="tool-icon">🟠</div><div class="tool-name">Присоска</div>
       </div>
     </div>
-
     <div class="parts-title">Твой инвентарь:</div>
     <div id="parts-tray" class="parts-tray glass"></div>
-    
     <div id="solder-panel" class="solder-panel glass hidden">
       <div class="solder-title">🔥 Пайка (удерживай палец)</div>
       <div id="solder-zone" class="solder-zone"><div id="solder-progress" class="solder-progress"></div></div>
       <div class="solder-hint">Бонус: <span id="solder-bonus">0</span>%</div>
     </div>
-    
     <div class="actions"><button id="btn-finish-repair" class="btn-primary" disabled>Завершить ремонт</button></div>
   </div>
 </section>
 
-<!-- ЭКРАН 5: СКЛАД -->
+<!-- ЭКРАН: СКЛАД (С ВЫСТАВЛЕНИЕМ ЦЕНЫ) -->
 <section id="screen-inventory" class="screen">
   <header class="topbar glass">
     <div class="title-wrap"><h2>📦 Склад</h2><p>Твои устройства</p></div>
@@ -198,16 +214,17 @@
   <div id="inventory-list" class="market-list"></div>
 </section>
 
-<!-- ЭКРАН 6: ПРОФИЛЬ -->
+<!-- ЭКРАН: ПРОФИЛЬ -->
 <section id="screen-profile" class="screen">
   <header class="topbar glass">
     <div class="title-wrap"><h2>👤 Профиль</h2><p>Статистика мастера</p></div>
     <div class="top-actions"><div class="wallet glass">💰 <span id="money-profile">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
   <div class="profile-card glass">
-    <div class="avatar">🛠</div><h2>Мастер</h2>
+    <div class="avatar">🛠</div><h2 id="profile-name">Мастер</h2>
     <div id="stars" class="stars">☆☆☆☆☆</div>
     <div class="muted">Репутация: <span id="rep-value">0</span></div>
+    <div class="muted" style="margin-top:8px;">Всего продаж: <span id="stat-total-sales" style="color:var(--gold); font-weight:900;">0</span></div>
   </div>
   <div class="stats-grid">
     <div class="stat glass"><div class="stat-label">Ремонтов</div><div class="stat-value" id="stat-repairs">0</div></div>
@@ -218,7 +235,7 @@
   <button id="btn-reset" class="btn-danger">Сбросить прогресс</button>
 </section>
 
-<!-- ЭКРАН 7: БИЗНЕС -->
+<!-- ЭКРАН: БИЗНЕС -->
 <section id="screen-business" class="screen">
   <header class="topbar glass">
     <div class="title-wrap"><h2>📈 Бизнес</h2><p>Инвестируй в развитие</p></div>

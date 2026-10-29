@@ -6,8 +6,21 @@
   <meta name="theme-color" content="#0b0d11" />
   <title>ТехноБарахолка Pro</title>
   <link rel="stylesheet" href="css/style.css" />
+  <!-- Библиотека для создания QR-кодов (на всякий случай, оставим) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
+
+<!-- ЗАСТАВКА (SPLASH SCREEN) -->
+<div id="splash-screen">
+  <div class="splash-logo">
+    <div class="splash-enjodev">ENJODEV</div>
+    <div class="splash-title">
+      Техн<span class="gear-icon">⚙️</span>Барахолка
+    </div>
+  </div>
+</div>
+
 <div class="bg-layer"><div class="glow-orb orb-1"></div><div class="glow-orb orb-2"></div><div class="glow-orb orb-3"></div></div>
 
 <!-- ЭКРАН 0: АВТОРИЗАЦИЯ -->
@@ -25,7 +38,7 @@
 <!-- ЭКРАН 1: РАБОЧИЙ СТОЛ -->
 <section id="screen-desktop" class="screen active">
   <header class="topbar glass">
-    <div class="brand"><span class="brand-icon">⚡</span> ТехноБарахолка <span class="pro-badge">PRO</span></div>
+    <div class="brand"><span class="brand-icon">⚡</span> Техн<span style="color: #a78bfa; font-size: 18px;">⚙️</span>Барахолка <span class="pro-badge">PRO</span></div>
     <div class="wallet glass">💰 <span id="money-desktop">10000</span> ₽</div>
   </header>
   <div class="desktop-hero">
@@ -60,10 +73,6 @@
     <button class="app-icon glass" data-screen="login">
       <div class="icon-bg" style="background: linear-gradient(135deg, #333, #111);">👑</div>
       <div class="icon-text"><span class="app-name">Админка</span><span class="app-desc">Вход для админа</span></div>
-    </button>
-    <button class="app-icon glass" onclick="window.openAdminAddMenu()" style="border: 1px dashed #fbbf24;">
-      <div class="icon-bg" style="background: linear-gradient(135deg, #fbbf24, #d97706);">➕</div>
-      <div class="icon-text"><span class="app-name" style="color: #fbbf24;">Добавить</span><span class="app-desc">Админ-меню</span></div>
     </button>
   </div>
 </section>
@@ -138,28 +147,44 @@
   </div>
   <div id="workshop-active" class="workshop hidden">
     <div id="tutorial-hint" class="tutorial-hint glass">👆 Нажми на телефон</div>
+    
     <div class="repair-stage glass">
       <div class="device-wrapper" id="device-wrapper-click">
-        <svg id="device-svg" viewBox="0 0 200 400" class="device-svg">
-          <defs>
-            <linearGradient id="screenGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#111"/><stop offset="1" stop-color="#222"/></linearGradient>
-            <linearGradient id="pcbGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a2a12"/><stop offset="1" stop-color="#114b22"/></linearGradient>
-          </defs>
-          <rect x="10" y="10" width="180" height="380" rx="30" fill="#1a1d24" stroke="#444" stroke-width="4"/>
-          <rect x="20" y="40" width="160" height="320" rx="20" fill="url(#pcbGrad)" id="svg-screen"/>
-          <path d="M30 80 L170 80 M30 120 L170 120 M30 200 L170 200" stroke="#1f6b2a" stroke-width="2" opacity="0.5"/>
-        </svg>
-        <div id="device-parts-layer" class="device-parts-layer"></div>
+        <!-- ФОН УСТРОЙСТВА (МЕНЯЕТСЯ В JS) -->
+        <div id="device-texture" style="width: 100%; height: 100%; border-radius: 30px; overflow: hidden; border: 4px solid #444; position: relative;">
+          <div id="device-screen" style="width: 100%; height: 80%; background: #111; border-radius: 20px 20px 0 0;"></div>
+          <div id="device-back" style="width: 100%; height: 20%; background: #222;"></div>
+        </div>
+        
+        <!-- СЛОЙ С БОЛТАМИ И КРЫШКОЙ (ДОБАВЛЯЕТСЯ ИЗ JS) -->
+        <div id="device-parts-layer" class="device-parts-layer" style="position: absolute; inset: 0;"></div>
       </div>
       <div id="faults-list" class="faults-list"></div>
     </div>
+
+    <!-- Инструменты -->
+    <div class="tools-tray" id="tools-tray">
+      <!-- Отвертка (появится, если нужно открутить болты) -->
+      <div class="tool-item" id="tool-screwdriver" onclick="window.pickTool('screwdriver')">
+        <div class="tool-icon">🪛</div>
+        <div class="tool-name">Отвёртка</div>
+      </div>
+      <!-- Оранжевая присоска (появится для снятия крышки) -->
+      <div class="tool-item" id="tool-suction" onclick="window.pickTool('suction')">
+        <div class="tool-icon">🟠</div>
+        <div class="tool-name">Присоска</div>
+      </div>
+    </div>
+
     <div class="parts-title">Твой инвентарь:</div>
     <div id="parts-tray" class="parts-tray glass"></div>
+    
     <div id="solder-panel" class="solder-panel glass hidden">
       <div class="solder-title">🔥 Пайка (удерживай палец)</div>
       <div id="solder-zone" class="solder-zone"><div id="solder-progress" class="solder-progress"></div></div>
       <div class="solder-hint">Бонус: <span id="solder-bonus">0</span>%</div>
     </div>
+    
     <div class="actions"><button id="btn-finish-repair" class="btn-primary" disabled>Завершить ремонт</button></div>
   </div>
 </section>

@@ -9,7 +9,6 @@
 </head>
 <body>
 
-<!-- ЗАСТАВКА -->
 <div id="splash-screen">
   <div class="splash-logo">
     <div class="splash-enjodev">ENJODEV</div>
@@ -19,20 +18,14 @@
 
 <div class="bg-layer"><div class="glow-orb orb-1"></div><div class="glow-orb orb-2"></div><div class="glow-orb orb-3"></div></div>
 
-<!-- ЭКРАН: АВТОРИЗАЦИЯ (Вход и Регистрация) -->
+<!-- ЭКРАН: АВТОРИЗАЦИЯ -->
 <section id="screen-login" class="screen">
   <div class="glass" style="padding: 32px; margin: auto; width: 90%; max-width: 400px; text-align: center;">
-    <h2 id="auth-title">Вход</h2>
-    <p style="margin-bottom: 20px; font-size: 13px; color: var(--muted);">Добро пожаловать в ТехноБарахолку</p>
-    
+    <h2>Вход в игру</h2>
+    <p style="margin-bottom: 20px; font-size: 13px; color: var(--muted);">Введи логин и пароль. Если аккаунта нет — он создастся.</p>
     <input type="text" id="auth-login" placeholder="Логин" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; outline:none;">
     <input type="password" id="auth-password" placeholder="Пароль" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; outline:none;">
-    
-    <button class="btn-primary" style="width: 100%;" onclick="window.doAuth()">Войти / Зарегистрироваться</button>
-    
-    <p style="margin-top: 16px; font-size: 12px; color: var(--muted);">
-      Нет аккаунта? Просто введи новый логин и пароль, и он создастся автоматически!
-    </p>
+    <button class="btn-primary" style="width: 100%;" onclick="window.doAuth()">Войти / Создать</button>
   </div>
 </section>
 
@@ -76,9 +69,8 @@
     </button>
     <button class="app-icon glass" data-screen="leaderboard">
       <div class="icon-bg" style="background: linear-gradient(135deg, #fbbf24, #d97706);">🏆</div>
-      <div class="icon-text"><span class="app-name">Лидеры</span><span class="app-desc">Топ игроков</span></div>
+      <div class="icon-text"><span class="app-name">Лидеры</span><span class="app-desc">Топ продаж</span></div>
     </button>
-    <!-- Кнопка админки (появляется, если игрок - админ) -->
     <button class="app-icon glass hidden" id="admin-icon" data-screen="admin">
       <div class="icon-bg" style="background: linear-gradient(135deg, #333, #111);">👑</div>
       <div class="icon-text"><span class="app-name">Админка</span><span class="app-desc">Управление</span></div>
@@ -98,16 +90,16 @@
 <!-- ЭКРАН: АДМИНКА -->
 <section id="screen-admin" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap"><h2>👑 Панель Админа</h2><p>Спавн устройств</p></div>
+    <div class="title-wrap"><h2>👑 Админка</h2><p>Спавн и игроки</p></div>
     <div class="top-actions"><button class="close-btn" data-back>✕</button></div>
   </header>
-  <div style="padding: 16px; text-align: center; color: var(--muted);">
-    Выбери устройство для спавна на рынок:
-  </div>
-  <div class="filter-container" style="padding: 0 16px;">
-    <button class="filter-btn active" onclick="window.spawnDevice('phone')">📱 Телефоны</button>
+  <div style="padding: 16px; text-align: center; color: var(--muted);">Добавить устройство на рынок:</div>
+  <div class="filter-container" style="padding: 0 16px; margin-bottom:16px;">
+    <button class="filter-btn" onclick="window.spawnDevice('phone')">📱 Телефон</button>
     <button class="filter-btn" onclick="window.spawnDevice('pc')">🖥 ПК</button>
   </div>
+  <h3 style="padding: 0 16px;">Зарегистрированные игроки:</h3>
+  <div id="admin-panel-list" class="market-list" style="padding: 0 16px;"></div>
 </section>
 
 <!-- ЭКРАН: МАРКЕТПЛЕЙС УСТРОЙСТВ -->
@@ -116,15 +108,12 @@
     <div class="title-wrap"><h2>🏪 Устройства</h2><p>Найди технику для ремонта</p></div>
     <div class="top-actions"><div class="wallet glass">💰 <span id="money-market">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
-  
   <input type="text" id="market-search" placeholder="🔍 Поиск устройства..." oninput="window.searchMarket(this.value)" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #fff; outline: none; font-size: 14px;">
-
   <div class="filter-container">
     <button class="filter-btn active" onclick="window.filterMarket('all')" id="fm-btn-all">Все</button>
     <button class="filter-btn" onclick="window.filterMarket('phone')" id="fm-btn-phone">📱 Телефоны</button>
     <button class="filter-btn" onclick="window.filterMarket('pc')" id="fm-btn-pc">🖥 Компьютеры</button>
   </div>
-
   <div id="market-list" class="market-list"></div>
   <button id="load-more-market" class="btn-primary" style="margin-top: 16px; display: none;" onclick="window.loadMoreMarket()">Показать ещё</button>
 </section>
@@ -151,14 +140,14 @@
 <!-- ЭКРАН: ЗАПЧАСТИ -->
 <section id="screen-parts-market" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap"><h2>⚙️ Запчасти</h2><p>Выбери категорию</p></div>
+    <div class="title-wrap"><h2>⚙️ Запчасти</h2><p>Закупка</p></div>
     <div class="top-actions"><div class="wallet glass">💰 <span id="money-parts">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
   <input type="text" id="parts-search" placeholder="🔍 Поиск запчасти..." oninput="window.searchParts(this.value)" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #fff; outline: none; font-size: 14px;">
   <div class="filter-container">
     <button class="filter-btn active" onclick="window.filterParts('all')" id="f-btn-all">Все</button>
     <button class="filter-btn" onclick="window.filterParts('phone')" id="f-btn-phone">📱 Смартфоны</button>
-    <button class="filter-btn" onclick="window.filterParts('pc')" id="f-btn-pc">🖥 ПК / Ноутбуки</button>
+    <button class="filter-btn" onclick="window.filterParts('pc')" id="f-btn-pc">🖥 ПК</button>
   </div>
   <div id="parts-market-list" class="market-list"></div>
   <button id="load-more-parts" class="btn-primary" style="margin-top: 16px; display: none;" onclick="window.loadMoreParts()">Показать ещё</button>
@@ -167,11 +156,11 @@
 <!-- ЭКРАН: МАСТЕРСКАЯ -->
 <section id="screen-workshop" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap"><h2>🔧 Мастерская</h2><p>Починим всё!</p></div>
+    <div class="title-wrap"><h2>🔧 Мастерская</h2><p>Ремонт</p></div>
     <div class="top-actions"><div class="wallet glass">💰 <span id="money-workshop">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
   <div id="workshop-empty" class="empty-state glass">
-    <div class="empty-icon">🔧</div><h3>Мастерская пуста</h3><p>Выбери устройство на складе, чтобы начать ремонт</p>
+    <div class="empty-icon">🔧</div><h3>Мастерская пуста</h3><p>Выбери устройство на складе</p>
     <button class="btn-primary" data-screen="inventory">Перейти на склад</button>
   </div>
   <div id="workshop-active" class="workshop hidden">
@@ -197,7 +186,7 @@
     <div class="parts-title">Твой инвентарь:</div>
     <div id="parts-tray" class="parts-tray glass"></div>
     <div id="solder-panel" class="solder-panel glass hidden">
-      <div class="solder-title">🔥 Пайка (удерживай палец)</div>
+      <div class="solder-title">🔥 Пайка</div>
       <div id="solder-zone" class="solder-zone"><div id="solder-progress" class="solder-progress"></div></div>
       <div class="solder-hint">Бонус: <span id="solder-bonus">0</span>%</div>
     </div>
@@ -205,7 +194,7 @@
   </div>
 </section>
 
-<!-- ЭКРАН: СКЛАД (С ВЫСТАВЛЕНИЕМ ЦЕНЫ) -->
+<!-- ЭКРАН: СКЛАД -->
 <section id="screen-inventory" class="screen">
   <header class="topbar glass">
     <div class="title-wrap"><h2>📦 Склад</h2><p>Твои устройства</p></div>
@@ -217,7 +206,7 @@
 <!-- ЭКРАН: ПРОФИЛЬ -->
 <section id="screen-profile" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap"><h2>👤 Профиль</h2><p>Статистика мастера</p></div>
+    <div class="title-wrap"><h2>👤 Профиль</h2><p>Статистика</p></div>
     <div class="top-actions"><div class="wallet glass">💰 <span id="money-profile">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
   <div class="profile-card glass">
@@ -238,7 +227,7 @@
 <!-- ЭКРАН: БИЗНЕС -->
 <section id="screen-business" class="screen">
   <header class="topbar glass">
-    <div class="title-wrap"><h2>📈 Бизнес</h2><p>Инвестируй в развитие</p></div>
+    <div class="title-wrap"><h2>📈 Бизнес</h2><p>Улучшения</p></div>
     <div class="top-actions"><div class="wallet glass">💰 <span id="money-business">10000</span> ₽</div><button class="close-btn" data-back>✕</button></div>
   </header>
   <div id="business-list" class="business-list"></div>

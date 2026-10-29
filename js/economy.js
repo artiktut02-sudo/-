@@ -51,7 +51,6 @@ const MODELS_PHONES = ["Pro", "Ultra", "Max", "Lite", "Neo", "S24", "S23", "X15"
 const BRANDS_PC = ["TITAN", "ATLAS", "VECTOR", "LUMEN", "MSI", "ASUS", "ACER", "LENOVO", "HP", "DELL"];
 const MODELS_PC = ["Game", "Workstation", "Office", "Extreme", "Air", "Pro", "Creator", "Gaming"];
 
-// Палитра цветов для текстур
 const PHONE_COLORS = ["#e0e0e0", "#1a1a1a", "#2a3b5c", "#4a2c2c", "#6b4c8a", "#a1a1a1", "#5c2a2a", "#2a5c3b"];
 const PC_COLORS = ["#2a2d35", "#111", "#1e3a8a", "#b91c1c", "#ffffff"];
 
@@ -87,11 +86,15 @@ function generateLots() {
     const devKey = DEVICE_KEYS[Math.floor(Math.random() * DEVICE_KEYS.length)];
     const dev = DEVICES[devKey];
     const availableParts = Object.keys(PARTS).filter(pId => PARTS[pId].type === dev.type);
+    
+    // ИСПРАВЛЕН БАГ: Используем Set для уникальных поломок
     const numFaults = Math.floor(Math.random() * 3) + 1;
-    const faults = [];
-    for (let j = 0; j < numFaults; j++) {
-      faults.push(availableParts[Math.floor(Math.random() * availableParts.length)]);
+    const faultSet = new Set();
+    while(faultSet.size < numFaults) {
+      faultSet.add(availableParts[Math.floor(Math.random() * availableParts.length)]);
     }
+    const faults = Array.from(faultSet);
+    
     LOTS.push({ id: `lot_${i}_${Date.now()}`, device: devKey, buy: Math.round(dev.basePrice * 0.3), sell: dev.basePrice, faults: faults, reqRep: Math.floor(i / 10) });
   }
 }
@@ -106,7 +109,8 @@ function finalSellPrice(lot, bonusPercent) { return Math.round(lot.sell * (1 + (
 
 const UPGRADES = [
   { id: "solderPro", name: "Имба-паяльник", desc: "Бонус пайки +15%", basePrice: 50000, reqRep: 10 },
-  { id: "fastSale", name: "Свой человек", desc: "Продажа +20%", basePrice: 100000, reqRep: 20 },
+  { id: "fastSale", name: "Свой человек", desc: "Быстрая продажа", basePrice: 100000, reqRep: 20 },
   { id: "office", name: "Аренда офиса", desc: "Лимит склада до 100", basePrice: 500000, reqRep: 30 },
-  { id: "employee", name: "Нанять сотрудника", desc: "Авто-ремонт", basePrice: 1000000, reqRep: 50 }
+  { id: "employee", name: "Нанять сотрудника", desc: "Авто-ремонт", basePrice: 1000000, reqRep: 50 },
+  { id: "firm", name: "Открыть свою фирму", desc: "Случайные продажи (от 40к до 1млн)", basePrice: 5000000, reqRep: 100 }
 ];

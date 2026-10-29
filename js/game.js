@@ -3,13 +3,8 @@ let G = null;
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => { document.getElementById("splash-screen")?.classList.add("hidden"); }, 2000);
   
-  const saved = localStorage.getItem("tehnobaraholka_save_v12");
-  if (saved) {
-    G = JSON.parse(saved);
-    startGame();
-  } else {
-    showScreen("login");
-  }
+  // ВСЕГДА показываем экран входа при запуске
+  showScreen("login");
 });
 
 // ВХОД И РЕГИСТРАЦИЯ

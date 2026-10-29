@@ -11,11 +11,6 @@ const SVG_PARTS = {
   monitor: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`
 };
 
-const SVG_DEVICES = {
-  phone: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="3"/><circle cx="12" cy="18" r="1" fill="#fff"/><rect x="7" y="4" width="10" height="12" rx="1"/></svg>`,
-  pc: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`
-};
-
 const PARTS = {};
 const PART_TYPES = [
   { key: "screen", name: "Экран", svg: SVG_PARTS.screen, basePrice: 2500, type: "phone" },
@@ -44,7 +39,7 @@ PART_TYPES.forEach(type => {
       svg: type.svg, 
       price: Math.round(type.basePrice * (i * 0.8)),
       type: type.type,
-      key: type.key // ВАЖНО: по этому ключу проверяем совместимость
+      key: type.key
     };
     partId++;
   }
@@ -56,16 +51,32 @@ const MODELS_PHONES = ["Pro", "Ultra", "Max", "Lite", "Neo", "S24", "S23", "X15"
 const BRANDS_PC = ["TITAN", "ATLAS", "VECTOR", "LUMEN", "MSI", "ASUS", "ACER", "LENOVO", "HP", "DELL"];
 const MODELS_PC = ["Game", "Workstation", "Office", "Extreme", "Air", "Pro", "Creator", "Gaming"];
 
+// Палитра цветов для текстур
+const PHONE_COLORS = ["#e0e0e0", "#1a1a1a", "#2a3b5c", "#4a2c2c", "#6b4c8a", "#a1a1a1", "#5c2a2a", "#2a5c3b"];
+const PC_COLORS = ["#2a2d35", "#111", "#1e3a8a", "#b91c1c", "#ffffff"];
+
 let devId = 0;
 BRANDS_PHONES.forEach((b, bIndex) => MODELS_PHONES.forEach((m, mIndex) => {
   devId++;
   const basePrice = 3000 + (bIndex * 5000) + (mIndex * 2000);
-  DEVICES[`dev_${devId}`] = { id: `dev_${devId}`, name: `${b} ${m}`, type: "phone", svg: SVG_DEVICES.phone, basePrice: Math.min(basePrice, 150000) };
+  const color = PHONE_COLORS[devId % PHONE_COLORS.length];
+  DEVICES[`dev_${devId}`] = { 
+    id: `dev_${devId}`, name: `${b} ${m}`, type: "phone", 
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="3" fill="${color}"/><rect x="7" y="4" width="10" height="12" rx="1" fill="#111"/><circle cx="12" cy="18" r="1" fill="#fff"/></svg>`,
+    basePrice: Math.min(basePrice, 150000),
+    textureColor: color
+  };
 }));
 BRANDS_PC.forEach((b, bIndex) => MODELS_PC.forEach((m, mIndex) => {
   devId++;
   const basePrice = 50000 + (bIndex * 100000) + (mIndex * 50000);
-  DEVICES[`dev_${devId}`] = { id: `dev_${devId}`, name: `${b} ${m} PC`, type: "pc", svg: SVG_DEVICES.pc, basePrice: Math.min(basePrice, 3000000) };
+  const color = PC_COLORS[devId % PC_COLORS.length];
+  DEVICES[`dev_${devId}`] = { 
+    id: `dev_${devId}`, name: `${b} ${m} PC`, type: "pc", 
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" fill="${color}"/><path d="M8 21h8M12 17v4"/></svg>`,
+    basePrice: Math.min(basePrice, 3000000),
+    textureColor: color
+  };
 }));
 
 let LOTS = [];

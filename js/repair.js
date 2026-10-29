@@ -4,12 +4,10 @@ let suctionTaps = 0;
 
 function renderPartsTray(partIds, container) {
   const allOwnedParts = Object.keys(G.ownedParts).filter(id => G.ownedParts[id] > 0);
-  
   if (allOwnedParts.length === 0) {
     container.innerHTML = `<div style="color:#888; padding:10px; font-size:13px;">Нет запчастей! Купи их в магазине (⚙️).</div>`;
     return;
   }
-
   container.innerHTML = allOwnedParts.map(id => {
     const p = PARTS[id];
     if (!p) return "";
@@ -80,35 +78,29 @@ window.pickTool = function(tool) {
   currentTool = tool;
   document.querySelectorAll(".tool-item").forEach(t => t.style.borderColor = "rgba(255,255,255,0.1)");
   document.getElementById(`tool-${tool}`).style.borderColor = "var(--gold)";
-  alert(`Выбран инструмент: ${tool === 'screwdriver' ? 'Отвёртка' : 'Присоска'}`);
 };
 
-// ГЛАВНАЯ МЕХАНИКА РАЗБОРКИ
 function renderDeviceMechanics(r) {
   const partsLayer = document.getElementById("device-parts-layer");
   const tutorial = document.getElementById("tutorial-hint");
   const tools = document.getElementById("tools-tray");
+  const dev = DEVICES[r.device];
   
   partsLayer.innerHTML = ""; 
   tutorial.classList.add("hidden");
   tools.classList.add("hidden");
 
-  // 1. Проверяем, есть ли поломка батареи
   const batteryFault = r.faults.find(f => PARTS[f.id]?.key === "battery");
-  
-  // Если батарея не сломана — крышку трогать не нужно
   if (!batteryFault) return; 
 
   tools.classList.remove("hidden");
 
-  // ЭТАП 1: Снятие крышки (присоска)
   if (!r.backCoverRemoved) {
     tutorial.classList.remove("hidden");
-    tutorial.textContent = "👆 Возьми присоску и нажми на неё 3 раза, чтобы сорвать крышку";
+    tutorial.textContent = "👆 Возьми присоску и нажми на неё 3 раза";
     
-    // Рисуем имитацию крышки
     partsLayer.innerHTML = `
-      <div id="back-cover" style="position:absolute; inset: 10px; background: linear-gradient(135deg, #2a2d35, #1a1d24); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); border: 1px solid #444; z-index: 10;">
+      <div id="back-cover" style="position:absolute; inset: 10px; background: ${dev.textureColor}; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); border: 1px solid #444; z-index: 10;">
         <div style="text-align: center; pointer-events: none;">
           <div style="font-size: 40px; margin-bottom: 8px;">🔩</div>
           <div style="color: #888; font-weight: 800; font-size: 12px;">ЗАДНЯЯ КРЫШКА</div>
@@ -116,7 +108,6 @@ function renderDeviceMechanics(r) {
       </div>
     `;
 
-    // Обработка нажатий на присоску
     const suctionBtn = document.getElementById("tool-suction");
     suctionBtn.onclick = () => {
       suctionTaps++;
@@ -133,12 +124,10 @@ function renderDeviceMechanics(r) {
     return;
   }
 
-  // ЭТАП 2: Откручивание болтов
-  if (r.backCoverRemoved && r.boltsRemoved < 4) {
+  if (r.backCoverRemoved && (r.boltsRemoved || 0) < 4) {
     tutorial.classList.remove("hidden");
-    tutorial.textContent = "👇 Возьми отвёртку и свайпни вверх по каждому болту";
+    tutorial.textContent = "👇 Возьми отвёртку и свайпни ВВЕРХ по болтам";
     
-    // Рисуем 4 болта по углам
     partsLayer.innerHTML = `
       <div style="position:absolute; inset: 20px; border: 2px dashed #333; border-radius: 16px;">
         <div class="bolt" id="bolt-0" style="top: 10px; left: 10px;"><div class="screw-pattern"></div></div>
@@ -148,17 +137,11 @@ function renderDeviceMechanics(r) {
       </div>
     `;
 
-    // Логика свайпа для болтов
     let startY = 0;
     document.querySelectorAll(".bolt").forEach((bolt, index) => {
-      bolt.addEventListener("touchstart", e => {
+      const handleSwipe = (endY) => {
         if (currentTool !== "screwdriver") return alert("Сначала выбери ОТВЁРТКУ!");
-        startY = e.touches[0].clientY;
-      });
-      bolt.addEventListener("touchend", e => {
-        if (currentTool !== "screwdriver") return;
-        const endY = e.changedTouches[0].clientY;
-        if (startY - endY > 30) { // Свайп вверх
+        if (startY - endY > 30) {
           bolt.style.opacity = "0.3";
           bolt.style.pointerEvents = "none";
           r.boltsRemoved = (r.boltsRemoved || 0) + 1;
@@ -168,27 +151,15 @@ function renderDeviceMechanics(r) {
             renderWorkshop();
           }
         }
-      });
-      // Для мышки
-      bolt.addEventListener("mousedown", e => { if (currentTool === "screwdriver") startY = e.clientY; });
-      bolt.addEventListener("mouseup", e => {
-        if (currentTool !== "screwdriver") return;
-        if (startY - e.clientY > 30) {
-          bolt.style.opacity = "0.3";
-          bolt.style.pointerEvents = "none";
-          r.boltsRemoved = (r.boltsRemoved || 0) + 1;
-          saveGame(G);
-          if (r.boltsRemoved >= 4) {
-            alert("Все болты откручены! Теперь можно достать батарею.");
-            renderWorkshop();
-          }
-        }
-      });
+      };
+      bolt.addEventListener("touchstart", e => { startY = e.touches[0].clientY; });
+      bolt.addEventListener("touchend", e => { handleSwipe(e.changedTouches[0].clientY); });
+      bolt.addEventListener("mousedown", e => { startY = e.clientY; });
+      bolt.addEventListener("mouseup", e => { handleSwipe(e.clientY); });
     });
     return;
   }
 
-  // ЭТАП 3: Извлечение батареи
   if (!r.batteryRemoved) {
     tutorial.classList.remove("hidden");
     tutorial.textContent = "👆 Нажми на батарею, чтобы извлечь её";
@@ -196,7 +167,6 @@ function renderDeviceMechanics(r) {
     return;
   }
 
-  // ЭТАП 4: Установка новой батареи (Drag&Drop)
   if (!batteryFault.done) {
     tutorial.classList.remove("hidden");
     tutorial.textContent = "👇 Перетащи новую батарею из инвентаря";
@@ -204,10 +174,9 @@ function renderDeviceMechanics(r) {
     return;
   }
 
-  // ЭТАП 5: Закрытие крышки и закручивание болтов
   if (batteryFault.done && !r.backCoverClosed) {
     tutorial.classList.remove("hidden");
-    tutorial.textContent = "👆 Нажми, чтобы закрыть крышку и закрутить болты";
+    tutorial.textContent = "👆 Нажми, чтобы закрыть крышку";
     partsLayer.innerHTML = `<div class="interactive-cover" onclick="window.closeCover()"><span>✅ Закрыть крышку</span></div>`;
   }
 }
@@ -216,7 +185,7 @@ window.toggleCover = function(isRemoving) {
   if (!G.activeRepair) return;
   if (isRemoving) {
     G.activeRepair.backCoverRemoved = true;
-    G.activeRepair.boltsRemoved = 0; // Сбрасываем болты при снятии
+    G.activeRepair.boltsRemoved = 0;
   }
   saveGame(G); renderWorkshop();
 };

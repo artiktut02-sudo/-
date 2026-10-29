@@ -31,10 +31,8 @@ function checkSaleStatus() {
       G.money += G.activeSale.price;
       G.stats.sales += 1; 
       if (!G.activeSale.isBroken) G.stats.repairs += 1;
-      
       if (G.activeSale.profit >= 0) { G.stats.earned += G.activeSale.profit; G.reputation += 5; } 
       else { G.stats.losses += 1; }
-      
       G.soldLotIds.push(G.activeSale.lotId);
       const msg = G.activeSale.isBroken ? "📦 Сломанное устройство продано!" : "💰 Покупатель нашелся! Деньги зачислены.";
       G.activeSale = null;
@@ -193,7 +191,8 @@ function buyLot(lotId, withDiscount) {
   G.money -= price;
   G.inventory.push({
     lotId: lot.id, device: lot.device, buyPrice: price, faults: lot.faults.map(f => ({ id: f, done: false })),
-    bonus: 0, solderDone: false, repairId: Date.now(), backCoverClosed: false, backCoverRemoved: false, batteryRemoved: false
+    bonus: 0, solderDone: false, repairId: Date.now(), backCoverClosed: false, 
+    backCoverRemoved: false, boltsRemoved: 0, batteryRemoved: false // <-- ДОБАВЛЕНЫ ПОЛЯ ДЛЯ МЕХАНИКИ
   });
   saveGame(G); updateMoneyUI(); updateInventoryUI();
   alert("📦 Устройство куплено!");
@@ -232,21 +231,21 @@ function renderInventory() {
           ${isFixed 
             ? `<button class="btn-primary" onclick="window.listOnMarket(${item.repairId})">Выставить</button>`
             : `<button class="btn-primary" style="background:linear-gradient(135deg,#f59e0b,#d97706);" onclick="window.startRepair(${item.repairId})">Починить</button>
-               <button class="btn-primary" style="background:#555; font-size:11px; padding:6px 10px;" onclick="window.listBrokenOnMarket(${item.repairId}, ${brokenPrice})">Продать как есть (${fmt(brokenPrice)} ₽)</button>`}
+               <button class="btn-primary" style="background:#555; font-size:11px; padding:6px 10px;" onclick="window.listBrokenOnMarket(${item.repairId}, ${brokenPrice})">Продать как есть</button>`}
         </div>
       </div>`;
   }).join("");
 }
 
 window.listBrokenOnMarket = function(repairId, price) {
-  if (!confirm(`Вы уверены, что хотите продать СЛОМАННОЕ устройство за ${fmt(price)} ₽? \n(Покупатель будет искать его 30 секунд)`)) return;
+  if (!confirm(`Продать СЛОМАННОЕ устройство за ${fmt(price)} ₽?`)) return;
   const idx = G.inventory.findIndex(i => i.repairId === repairId);
   if (idx === -1) return;
   const item = G.inventory[idx];
   G.activeSale = { lotId: item.lotId, price: price, profit: price - item.buyPrice, endTime: Date.now() + 30000, isBroken: true };
   G.inventory.splice(idx, 1);
   saveGame(G); updateInventoryUI(); renderInventory();
-  alert("📈 Сломанное устройство выставлено на продажу! Ждем покупателя (30 сек).");
+  alert("📈 Сломанное устройство выставлено (30 сек).");
 };
 
 window.startRepair = function(repairId) {
@@ -263,26 +262,17 @@ function renderWorkshop() {
   const r = G.activeRepair;
   const dev = DEVICES[r.device];
 
-  // ЕСЛИ НЕТ ПОЛОМКИ БАТАРЕИ, СЧИТАЕМ КРЫШКУ ЗАКРЫТОЙ АВТОМАТИЧЕСКИ
+  // УСТАНАВЛИВАЕМ ТЕКСТУРУ ДЛЯ КОНКРЕТНОГО УСТРОЙСТВА
+  const textureEl = document.getElementById("device-texture");
+  const backEl = document.getElementById("device-back");
+  if (textureEl && dev.textureColor) {
+    textureEl.style.borderColor = dev.textureColor;
+    backEl.style.background = dev.textureColor;
+  }
+
+  // Баг-фикс: если нет поломки батареи, крышка считается закрытой
   const hasBatteryFault = r.faults.some(f => PARTS[f.id]?.key === "battery");
   if (!hasBatteryFault) r.backCoverClosed = true;
-
-  const svgScreen = document.getElementById("svg-screen");
-  const svgDefs = document.querySelector("#device-svg defs");
-  
-  if (dev.type === "pc") {
-    svgScreen.setAttribute("x", "20"); svgScreen.setAttribute("y", "40"); svgScreen.setAttribute("width", "160"); svgScreen.setAttribute("height", "120");
-    document.querySelector("#device-svg rect[stroke='#444']").setAttribute("height", "260");
-    if (svgDefs) {
-       svgDefs.innerHTML = `<linearGradient id="pcbGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1d24"/><stop offset="1" stop-color="#0a0a0a"/></linearGradient>`;
-    }
-  } else {
-    svgScreen.setAttribute("x", "20"); svgScreen.setAttribute("y", "40"); svgScreen.setAttribute("width", "160"); svgScreen.setAttribute("height", "320");
-    document.querySelector("#device-svg rect[stroke='#444']").setAttribute("height", "380");
-    if (svgDefs) {
-       svgDefs.innerHTML = `<linearGradient id="pcbGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a2a12"/><stop offset="1" stop-color="#114b22"/></linearGradient>`;
-    }
-  }
 
   els.faultsList.innerHTML = r.faults.map(f => {
     const p = PARTS[f.id]; return `<div class="fault-chip ${f.done ? "fixed" : ""}">${p.name}${f.done ? " ✓" : ""}</div>`;
@@ -293,15 +283,9 @@ function renderWorkshop() {
   const deviceDropZone = document.getElementById("device-wrapper-click");
   if (deviceDropZone) {
     bindDragDrop(els.partsTray, deviceDropZone, partId => {
-      // Ищем поломку по КЛЮЧУ, а не по ID (чтобы Ур.1 и Ур.5 считались одним и тем же)
       const fault = r.faults.find(f => PARTS[f.id]?.key === PARTS[partId]?.key && !f.done);
-      
-      if (PARTS[partId].type !== dev.type) {
-         return alert("❌ Эта запчасть не подходит к этому устройству!");
-      }
-
+      if (PARTS[partId].type !== dev.type) return alert("❌ Эта запчасть не подходит!");
       if (!fault) return alert("Эта запчасть здесь не нужна!");
-      
       const isBattery = PARTS[partId]?.key === "battery";
       if (isBattery && !r.backCoverRemoved) return alert("Сначала снимите крышку!");
       if ((G.ownedParts[partId] || 0) <= 0) return alert("У тебя нет этой запчасти!");
@@ -327,7 +311,6 @@ function renderWorkshop() {
     els.solderPanel.classList.remove("hidden"); els.solderProgress.style.width = "100%"; els.solderBonus.textContent = r.bonus;
   } else { els.solderPanel.classList.add("hidden"); }
 
-  // ЕСЛИ ВСЕ ПОЧИНЕНО И КРЫШКА ЗАКРЫТА (или не требовалась)
   const canFinish = allFixed && r.backCoverClosed;
   els.btnFinishRepair.disabled = !canFinish;
   els.btnFinishRepair.textContent = canFinish ? "Отправить на склад" : (allFixed && !r.backCoverClosed ? "Закройте крышку!" : "Завершить ремонт");
@@ -351,7 +334,7 @@ window.listOnMarket = function(repairId) {
   G.activeSale = { lotId: item.lotId, price: sellPrice, profit: sellPrice - item.buyPrice, endTime: Date.now() + 15000, isBroken: false };
   G.inventory.splice(idx, 1);
   saveGame(G); updateInventoryUI(); renderInventory();
-  alert("📈 Выставлено на продажу! Ждем покупателя (15 сек).");
+  alert("📈 Выставлено на продажу! Ждем 15 сек.");
 };
 
 function renderProfile() {
@@ -394,49 +377,10 @@ window.tryLogin = function() {
     saveGame(G);
     alert("✅ Добро пожаловать, Админ!");
     showScreen("desktop");
-    if (!document.getElementById("admin-panel")) {
-      const panel = document.createElement("div");
-      panel.id = "admin-panel";
-      panel.style.cssText = "position:fixed; bottom:20px; right:20px; background:#000; border:2px solid #fbbf24; padding:10px; border-radius:10px; z-index:9999; color:#fff; font-size:12px; box-shadow: 0 0 20px rgba(0,0,0,0.8); display:flex; flex-direction:column; gap:5px;";
-      panel.innerHTML = `
-        <div style="font-weight:bold; color:#fbbf24; text-align:center; margin-bottom:5px;">👑 АДМИН-ПАНЕЛЬ</div>
-        <button onclick="window.addMoney(1000000)" style="background:#22c55e; color:#fff; padding:8px; border-radius:5px; border:none; cursor:pointer;">+1 000 000 ₽</button>
-        <button onclick="window.addRep(10)" style="background:#8b5cf6; color:#fff; padding:8px; border-radius:5px; border:none; cursor:pointer;">+10 Репутации</button>
-        <button onclick="window.openAdminAddMenu()" style="background:#f59e0b; color:#fff; padding:8px; border-radius:5px; border:none; cursor:pointer;">➕ Добавить устройство</button>
-        <button onclick="window.adminRefreshMarket()" style="background:#3b82f6; color:#fff; padding:8px; border-radius:5px; border:none; cursor:pointer;">🔄 Обновить рынок</button>
-      `;
-      document.body.appendChild(panel);
-    }
   } else {
     alert("❌ Неверный логин или пароль");
   }
 };
-
-window.openAdminAddMenu = function() {
-  if (!G.isAdmin) return alert("Только для админа!");
-  const devKeys = Object.keys(DEVICES);
-  const randomDevKey = devKeys[Math.floor(Math.random() * devKeys.length)];
-  const dev = DEVICES[randomDevKey];
-  const choice = prompt(`Добавить "${dev.name}"? \n1 - на Склад, \n2 - на Рынок, \n3 - Отмена`);
-  if (choice === "1") {
-    G.inventory.push({ lotId: `admin_${Date.now()}`, device: randomDevKey, buyPrice: 0, faults: [], bonus: 100, solderDone: true, repairId: Date.now(), backCoverClosed: true });
-    saveGame(G); updateInventoryUI();
-    alert("✅ Добавлено на склад!");
-  } else if (choice === "2") {
-    LOTS.unshift({ id: `admin_lot_${Date.now()}`, device: randomDevKey, buy: Math.round(dev.basePrice * 0.3), sell: dev.basePrice, faults: ["p_0", "p_1"], reqRep: 0 });
-    saveGame(G); alert("✅ Добавлено на рынок!"); renderMarket();
-  }
-};
-
-window.adminRefreshMarket = function() {
-  if (!G.isAdmin) return alert("Только для админа!");
-  generateLots();
-  alert("🔄 Рынок обновлен!");
-  renderMarket();
-};
-
-window.addMoney = function(amount) { G.money += amount; saveGame(G); updateMoneyUI(); };
-window.addRep = function(amount) { G.reputation += amount; saveGame(G); renderProfile(); };
 
 function init() {
   updateMoneyUI(); updateInventoryUI();
@@ -452,6 +396,12 @@ function init() {
   }
   setInterval(() => saveGame(G), 15000);
   showScreen("desktop");
+  
+  // Скрываем заставку через 2.5 секунды
+  setTimeout(() => {
+    const splash = document.getElementById("splash-screen");
+    if (splash) splash.classList.add("hidden");
+  }, 2500);
 }
 
 document.addEventListener("DOMContentLoaded", init);

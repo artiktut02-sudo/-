@@ -15,14 +15,14 @@ const PARTS = {};
 const PART_TYPES = [
   { key: "screen", name: "Экран", svg: SVG_PARTS.screen, basePrice: 2500, type: "phone" },
   { key: "battery", name: "Батарея", svg: SVG_PARTS.battery, basePrice: 1200, type: "phone" },
-  { key: "charging", name: "Разъем зарядки", svg: SVG_PARTS.power, basePrice: 800, type: "phone" },
-  { key: "backcover", name: "Задняя крышка", svg: SVG_PARTS.cooler, basePrice: 1000, type: "phone" },
+  { key: "charging", name: "Разъем", svg: SVG_PARTS.power, basePrice: 800, type: "phone" },
+  { key: "backcover", name: "Крышка", svg: SVG_PARTS.cooler, basePrice: 1000, type: "phone" },
   { key: "speaker", name: "Динамик", svg: SVG_PARTS.cooler, basePrice: 600, type: "phone" },
   { key: "gpu", name: "Видеокарта", svg: SVG_PARTS.gpu, basePrice: 150000, type: "pc" },
   { key: "cpu", name: "Процессор", svg: SVG_PARTS.cpu, basePrice: 50000, type: "pc" },
   { key: "psu", name: "Блок питания", svg: SVG_PARTS.battery, basePrice: 15000, type: "pc" },
-  { key: "motherboard", name: "Материнская плата", svg: SVG_PARTS.cooler, basePrice: 25000, type: "pc" },
-  { key: "ram", name: "Оперативная память", svg: SVG_PARTS.paste, basePrice: 12000, type: "pc" },
+  { key: "motherboard", name: "Материнка", svg: SVG_PARTS.cooler, basePrice: 25000, type: "pc" },
+  { key: "ram", name: "ОЗУ", svg: SVG_PARTS.paste, basePrice: 12000, type: "pc" },
   { key: "cooler", name: "Кулер", svg: SVG_PARTS.cooler, basePrice: 800, type: "pc" },
   { key: "paste", name: "Термопаста", svg: SVG_PARTS.paste, basePrice: 500, type: "pc" },
   { key: "monitor", name: "Монитор", svg: SVG_PARTS.monitor, basePrice: 8000, type: "pc" },
@@ -34,12 +34,8 @@ let partId = 0;
 PART_TYPES.forEach(type => {
   for (let i = 1; i <= 5; i++) {
     PARTS[`p_${partId}`] = { 
-      id: `p_${partId}`, 
-      name: `${type.name} (Ур. ${i})`, 
-      svg: type.svg, 
-      price: Math.round(type.basePrice * (i * 0.8)),
-      type: type.type,
-      key: type.key
+      id: `p_${partId}`, name: `${type.name} (Ур. ${i})`, svg: type.svg, 
+      price: Math.round(type.basePrice * (i * 0.8)), type: type.type, key: type.key
     };
     partId++;
   }
@@ -62,8 +58,7 @@ BRANDS_PHONES.forEach((b, bIndex) => MODELS_PHONES.forEach((m, mIndex) => {
   DEVICES[`dev_${devId}`] = { 
     id: `dev_${devId}`, name: `${b} ${m}`, type: "phone", 
     svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="3" fill="${color}"/><rect x="7" y="4" width="10" height="12" rx="1" fill="#111"/><circle cx="12" cy="18" r="1" fill="#fff"/></svg>`,
-    basePrice: Math.min(basePrice, 150000),
-    textureColor: color
+    basePrice: Math.min(basePrice, 150000), textureColor: color
   };
 }));
 BRANDS_PC.forEach((b, bIndex) => MODELS_PC.forEach((m, mIndex) => {
@@ -73,8 +68,7 @@ BRANDS_PC.forEach((b, bIndex) => MODELS_PC.forEach((m, mIndex) => {
   DEVICES[`dev_${devId}`] = { 
     id: `dev_${devId}`, name: `${b} ${m} PC`, type: "pc", 
     svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" fill="${color}"/><path d="M8 21h8M12 17v4"/></svg>`,
-    basePrice: Math.min(basePrice, 3000000),
-    textureColor: color
+    basePrice: Math.min(basePrice, 3000000), textureColor: color
   };
 }));
 
@@ -87,7 +81,6 @@ function generateLots() {
     const dev = DEVICES[devKey];
     const availableParts = Object.keys(PARTS).filter(pId => PARTS[pId].type === dev.type);
     
-    // ИСПРАВЛЕН БАГ: Используем Set для уникальных поломок
     const numFaults = Math.floor(Math.random() * 3) + 1;
     const faultSet = new Set();
     while(faultSet.size < numFaults) {
@@ -112,5 +105,5 @@ const UPGRADES = [
   { id: "fastSale", name: "Свой человек", desc: "Быстрая продажа", basePrice: 100000, reqRep: 20 },
   { id: "office", name: "Аренда офиса", desc: "Лимит склада до 100", basePrice: 500000, reqRep: 30 },
   { id: "employee", name: "Нанять сотрудника", desc: "Авто-ремонт", basePrice: 1000000, reqRep: 50 },
-  { id: "firm", name: "Открыть свою фирму", desc: "Случайные продажи (от 40к до 1млн)", basePrice: 5000000, reqRep: 100 }
+  { id: "firm", name: "Открыть свою фирму", desc: "Случайные продажи от 40к до 1млн", basePrice: 5000000, reqRep: 100 }
 ];
